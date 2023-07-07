@@ -33,13 +33,6 @@ class OpenObserve:
             print("could not convert timestamp: " + str(timestamp))
         return timestamp
     
-    def __float2Int(self, flatdict: dict) -> dict:
-        # apparently openobserve does not support float values?!
-        for key, val in flatdict.items():
-            if isinstance(val, float):
-                flatdict[key] = int(val)
-        return flatdict
-    
     def __intts2datetime(self, flatdict: dict) -> dict:
         for key, val in flatdict.items():
             if "time" in key:
@@ -57,8 +50,6 @@ class OpenObserve:
         # expects a flattened json
         document = flatten(document)
         document = self.__datetime2Str(document)
-        # apparently openobserve does not support float values?!
-        document = self.__float2Int(document)
 
         res = requests.post(self.openobserve_url.replace("[STREAM]", index) + "/_json", headers=self.headers, json=[document])
         if res.status_code != 200:
