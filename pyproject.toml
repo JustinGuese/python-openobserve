@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "python-openobserve"
+version = "0.1.1"
+description = ""
+authors = ["Justin Guese <guese.justin@gmail.com>"]
+license = "GNUv3"
+readme = "README.md"
+homepage = "https://github.com/JustinGuese/python-openobserve"
+repository = "https://github.com/JustinGuese/python-openobserve"
+keywords = ["openobserve", "elasticsearch", "logging", "unstructured data"]
+packages = [{include = "python_openobserve"}]
+include = [
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = ">3.9"
+requests = "^2.31.0"
+pydantic = "<2.0.0"
+sqlglot = "^17.3.0"
+
+[tool.poetry.scripts]
+python_openobserve = 'python_openobserve:openobserve'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
