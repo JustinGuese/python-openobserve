@@ -5,6 +5,7 @@ from collections.abc import MutableMapping
 from typing import List, Dict
 import sqlglot
 import json
+from pprint import pprint
 
 
 def flatten(dictionary, parent_key='', separator='.'):
@@ -60,7 +61,7 @@ class OpenObserve:
             raise Exception(f"Openobserve index failed. {res['status'][0]['error']}. document: {document}")
         return res
 
-    def search(self, sql: str, start_time: datetime = 0, end_time: datetime = 0) -> List[Dict]:
+    def search(self, sql: str, start_time: datetime = 0, end_time: datetime = 0, verbosity: int = 0) -> List[Dict]:
         if isinstance(start_time, datetime):
             # convert to unixtime 
             start_time = self.__timestampConvert(start_time)
@@ -79,6 +80,8 @@ class OpenObserve:
                     "start": start_time,
                     "end": end_time
                 }}
+        if verbosity > 0:
+            pprint(query)
         res = requests.post(self.openobserve_url.replace("/[STREAM]", "") + "/_search", json = query, headers=self.headers, verify=self.verify)
         if res.status_code != 200:
             raise Exception(f"Openobserve returned {res.status_code}. Text: {res.text}. url: {res.url}")
