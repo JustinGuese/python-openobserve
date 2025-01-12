@@ -77,8 +77,8 @@ class OpenObserve:
 
         query = {"query" : {
                     "sql": sql,
-                    "start": start_time,
-                    "end": end_time
+                    "start_time": start_time,
+                    "end_time": end_time
                 }}
         if verbosity > 0:
             pprint(query)
