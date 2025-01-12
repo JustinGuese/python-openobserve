@@ -18,10 +18,11 @@ def flatten(dictionary, parent_key='', separator='.'):
     return dict(items)
 
 class OpenObserve:
-    def __init__(self, user, password, organisation = "default", host = "http://localhost:5080") -> None:
+    def __init__(self, user, password, organisation = "default", host = "http://localhost:5080", verify = True) -> None:
         bas64encoded_creds = base64.b64encode(bytes(user + ":" + password, "utf-8")).decode("utf-8")
         self.openobserve_url = host + "/api/" + organisation + "/" + "[STREAM]" 
         self.headers =  {'Content-Type': 'application/x-www-form-urlencoded', "Authorization": "Basic " + bas64encoded_creds}
+        self.verify = verify
 
     def __timestampConvert(self, timestamp: datetime) -> int:
         return int(timestamp.timestamp() * 1000)
@@ -51,7 +52,7 @@ class OpenObserve:
         document = flatten(document)
         document = self.__datetime2Str(document)
 
-        res = requests.post(self.openobserve_url.replace("[STREAM]", index) + "/_json", headers=self.headers, json=[document])
+        res = requests.post(self.openobserve_url.replace("[STREAM]", index) + "/_json", headers=self.headers, json=[document], verify=self.verify)
         if res.status_code != 200:
             raise Exception(f"Openobserve returned {res.status_code}. Text: {res.text}")
         res = res.json()
@@ -78,7 +79,7 @@ class OpenObserve:
                     "start": start_time,
                     "end": end_time
                 }}
-        res = requests.post(self.openobserve_url.replace("/[STREAM]", "") + "/_search", json = query, headers=self.headers)
+        res = requests.post(self.openobserve_url.replace("/[STREAM]", "") + "/_search", json = query, headers=self.headers, verify=self.verify)
         if res.status_code != 200:
             raise Exception(f"Openobserve returned {res.status_code}. Text: {res.text}. url: {res.url}")
         # timestamp back convert
