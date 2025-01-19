@@ -20,19 +20,19 @@ def flatten(dictionary, parent_key='', separator='.'):
 class OpenObserve:
     def __init__(self, user, password, organisation = "default", host = "http://localhost:5080") -> None:
         bas64encoded_creds = base64.b64encode(bytes(user + ":" + password, "utf-8")).decode("utf-8")
-        self.openobserve_url = host + "/api/" + organisation + "/" + "[STREAM]" 
+        self.openobserve_url = host + "/api/" + organisation + "/" + "[STREAM]"
         self.headers =  {'Content-Type': 'application/x-www-form-urlencoded', "Authorization": "Basic " + bas64encoded_creds}
 
     def __timestampConvert(self, timestamp: datetime) -> int:
         return int(timestamp.timestamp() * 1000)
-    
+
     def __unixTimestampConvert(self, timestamp: int) -> datetime:
-        try: 
+        try:
             timestamp = datetime.fromtimestamp(timestamp/1000000)
         except:
             print("could not convert timestamp: " + str(timestamp))
         return timestamp
-    
+
     def __intts2datetime(self, flatdict: dict) -> dict:
         for key, val in flatdict.items():
             if "time" in key:
@@ -61,10 +61,10 @@ class OpenObserve:
 
     def search(self, sql: str, start_time: datetime = 0, end_time: datetime = 0) -> List[Dict]:
         if isinstance(start_time, datetime):
-            # convert to unixtime 
+            # convert to unixtime
             start_time = self.__timestampConvert(start_time)
         if isinstance(end_time, datetime):
-            # convert to unixtime 
+            # convert to unixtime
             end_time = self.__timestampConvert(end_time)
 
         # verify sql
