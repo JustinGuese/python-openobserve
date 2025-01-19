@@ -24,7 +24,7 @@ from pprint import pprint
 document = {
     "@timestamp" : datetime.utcnow(),
     "component" : "testagent",
-    "action" : "buy", 
+    "action" : "buy",
     "amount" : random() * 100,
     "portfolio" : {
         "USD" : random() * 100.0,
