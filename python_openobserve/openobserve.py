@@ -26,7 +26,7 @@ class OpenObserve:
         self.verify = verify
 
     def __timestampConvert(self, timestamp: datetime) -> int:
-        return int(timestamp.timestamp() * 1000)
+        return int(timestamp.timestamp() * 1000000)
     
     def __unixTimestampConvert(self, timestamp: int) -> datetime:
         try: 
