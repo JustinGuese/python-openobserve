@@ -24,7 +24,7 @@ class OpenObserve:
         bas64encoded_creds = base64.b64encode(bytes(user + ":" + password, "utf-8")).decode("utf-8")
         self.openobserve_url = host + "/api/" + organisation + "/" + "[STREAM]" 
         self.openobserve_host = host
-        self.headers =  {'Content-Type': 'application/x-www-form-urlencoded', "Authorization": "Basic " + bas64encoded_creds}
+        self.headers =  {'Content-Type': 'application/json', "Authorization": "Basic " + bas64encoded_creds}
         self.verify = verify
 
     def __timestampConvert(self, timestamp: datetime) -> int:
