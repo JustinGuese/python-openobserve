@@ -3,6 +3,7 @@ import base64
 from datetime import datetime
 from collections.abc import MutableMapping
 from typing import List, Dict, Union, Optional, Any
+from pathlib import Path
 import sqlglot
 import json
 import pandas
@@ -245,12 +246,74 @@ class OpenObserve:
             return pandas.json_normalize(response_json[key])
         return response_json
 
+    # pylint: disable=too-many-branches
+    def export_objects_split(
+        self,
+        object_type: str,
+        json_data: list[dict],
+        file_path: str,
+        *,
+        verbosity: int = 0,
+        flat: bool = False,
+    ):
+        """
+        Export OpenObserve json configuration to split json files
+        """
+        key = "list"
+        key2 = "name"
+        if object_type == "dashboards":
+            key = "dashboards"
+            key2 = "dashboard_id"
+        if object_type == "users":
+            key = "data"
+            key2 = "email"
+        self._debug(json_data, verbosity, 3)
+        if flat is True:
+            dst_path = f"{file_path}{object_type}-"
+        else:
+            dst_path = f"{file_path}{object_type}/"
+            Path(dst_path).mkdir(parents=True, exist_ok=True)
+        if object_type in ("alerts/destinations", "alerts/templates"):
+            self._debug("json_list set to alerts type", verbosity, 2)
+            json_list = cast(List[Dict], json_data)
+        else:
+            try:
+                json_list = cast(List[Dict], json_data[key])  # type: ignore[call-overload]
+                self._debug(f"json_list set to key {key}: {json_list}", verbosity, 2)
+            except:
+                json_list = cast(List[Dict], [json_data])
+                self._debug(f"json_list set to array: {json_list}", verbosity, 2)
+        for json_object in json_list:
+            self._debug(
+                f"Export json {object_type} {json_object[key2]}...", verbosity, 0
+            )
+            self._debug(f"json {json_object}", verbosity, 2)
+            try:
+                with open(
+                    f"{dst_path}{json_object[key2]}.json",
+                    "w",
+                    encoding="utf-8",
+                ) as f:
+                    json.dump(json_object, f, ensure_ascii=False, indent=4)
+            except Exception as err:
+                self._debug(
+                    f"Exception on json {object_type} {json_object[key2]}: {err}.",
+                    verbosity,
+                    0,
+                )
+        return True
+
+
     def config_export(
-        self, file_path: str, verbosity: int = 0, outformat: str = "json"
+        self,
+        file_path: str,
+        verbosity: int = 0,
+        *,
+        outformat: str = "json",
+        split: bool = False,
+        flat: bool = False,
     ):
         """Export OpenObserve configuration to json/csv/xlsx"""
-        # Convert format for initial data retrieval if needed
-        data_format = "df" if outformat in ["csv", "xlsx"] else outformat
 
         # Collect all configuration data
         object_types = {
@@ -263,26 +326,45 @@ class OpenObserve:
             "streams": "streams",
             "users": "users",
         }
+        if outformat in ("csv", "xlsx"):
+            # Collect all data
+            data = {
+                name: self.list_objects2df(api_path, verbosity=verbosity)
+                for name, api_path in object_types.items()
+            }
 
-        # Collect all data
-        data = {
-            name: self.list_objects(
-                api_path, verbosity=verbosity, outformat=data_format
-            )
-            for name, api_path in object_types.items()
-        }
-
-        # Export based on format
-        if outformat == "csv":
-            for name, df in data.items():
-                df.to_csv(f"{file_path}{name}.csv")
-        elif outformat == "xlsx":
-            for name, df in data.items():
-                df.to_excel(f"{file_path}{name}.xlsx")
+            # Export based on format
+            if outformat == "csv":
+                for name, df in data.items():
+                    df.to_csv(f"{file_path}{name}.csv")
+            elif outformat == "xlsx":
+                for name, df in data.items():
+                    df.to_excel(f"{file_path}{name}.xlsx")
         else:  # default json
-            for name, object_data in data.items():
-                with open(f"{file_path}{name}.json", "w", encoding="utf-8") as f:
-                    json.dump(object_data, f, ensure_ascii=False, indent=4)
+
+            if split is True and flat is False:
+                # split json
+                data = {
+                    name: [api_path, self.list_objects(api_path, verbosity=verbosity)]
+                    for name, api_path in object_types.items()
+                }
+
+                for name, object_data in data.items():
+                    self.export_objects_split(
+                        object_data[0], object_data[1], file_path, verbosity=verbosity
+                    )
+            elif split is True and flat is True:
+                print("FIXME! Not implemented")
+                sys.exit(1)
+            else:
+                data = {
+                    name: self.list_objects(api_path, verbosity=verbosity)
+                    for name, api_path in object_types.items()
+                }
+
+                for name, object_data in data.items():
+                    with open(f"{file_path}{name}.json", "w", encoding="utf-8") as f:
+                        json.dump(object_data, f, ensure_ascii=False, indent=4)
 
     def create_function(self, function_json: dict, verbosity: int = 0):
         """Create function https://openobserve.ai/docs/api/function/create"""
@@ -372,14 +454,76 @@ class OpenObserve:
         self._debug("Update object completed", verbosity)
         return True
 
+    def import_objects_split(
+        self,
+        object_type: str,
+        json_data: dict,
+        file_path: str,
+        *,
+        overwrite: bool = False,
+        verbosity: int = 0,
+    ) -> bool:
+        """
+        Import OpenObserve configuration from split json files
+        """
+        key2 = "name"
+        if object_type == "dashboards":
+            key2 = "dashboard_id"
+        file = Path(file_path)
+        if (json_data is None or not json_data) and file.exists():
+            with open(file_path, "r", encoding="utf-8") as json_file:
+                self._debug(
+                    f"Load json data to import from file {file_path}",
+                    verbosity,
+                    level=0,
+                )
+                json_data = json.loads(json_file.read())
+        elif json_data is None:
+            self._debug(
+                "Fatal! import_objects_split(): input json_data None and file_path not exist",
+                verbosity,
+                level=0,
+            )
+            return False
+        self._debug(f"json_data: {json_data}", verbosity, level=3)
+        self._debug(
+            f"Try to create {object_type} {json_data[key2]}...", verbosity, level=0
+        )
+        try:
+            res = self.create_object(object_type, json_data, verbosity=verbosity)
+            self._debug(f"Create returns {res}.", verbosity, level=0)
+
+            if res:
+                return res
+
+            if overwrite:
+                self._debug(
+                    f"Overwrite enabled. Updating object {json_data[key2]}",
+                    verbosity,
+                    level=0,
+                )
+                res = self.update_object(object_type, json_data, verbosity=verbosity)
+                self._debug(f"Update returns {res}.", verbosity, level=0)
+                return res
+
+        except Exception as exc:
+            raise Exception(f"Exception: {exc}") from exc
+        return False
+
+    # pylint: disable=too-many-locals
     def import_objects(
         self,
         object_type: str,
         file_path: str,
+        *,
         overwrite: bool = False,
         verbosity: int = 0,
-    ):
-        """Import objects from json file"""
+        split: bool = False,
+    ) -> bool:
+        """Import objects from json file
+        Note: API does not import list of objects, need to do one by one.
+        FIXME! dashboards are always imported as new creating duplicates. no idempotence.
+        """
         # Determine key mappings based on object type
         key_mappings = {
             "dashboards": ("dashboards", "dashboardId"),
@@ -389,7 +533,26 @@ class OpenObserve:
         }
         list_key, id_key = key_mappings.get(object_type, ("list", "name"))
 
-        with open(file_path, "r") as json_file:
+        if split is True:
+            self._debug(
+                f"import_objects: search files in {file_path}", verbosity, level=2
+            )
+            # functions
+            # for file in glob.iglob(file_path + "functions/*.json"):
+            for file in os.listdir(f"{file_path}"):
+                if not file.endswith(".json"):
+                    continue
+                self._debug(f"import_objects: file {file}", verbosity, level=1)
+                self.import_objects_split(
+                    object_type,
+                    {},
+                    f"{file_path}/{file}",
+                    overwrite=overwrite,
+                    verbosity=verbosity,
+                )
+            return True
+
+        with open(file_path, "r", encoding="utf-8") as json_file:
             json_data = json.load(json_file)
             self._debug(json_data, verbosity, level=3)
 
@@ -429,11 +592,14 @@ class OpenObserve:
         self,
         object_type: str,
         file_path: str,
+        *,
         overwrite: bool = False,
         verbosity: int = 0,
+        split: bool = False,
     ):
         """Import OpenObserve configuration from json files"""
-        if object_type == "all":
+
+        if object_type == "all" and split is True:
             importable_types = [
                 "functions",
                 "pipelines",
@@ -442,12 +608,42 @@ class OpenObserve:
                 "alerts/templates",
                 "dashboards",
                 # 'streams' and 'users' are not supported by the API
+                # No CreateStream, only CreateStreamSettings
+                # self.import_objects('streams', f"{file_path}streams.json", overwrite, verbosity)
+                # "Return 400. Text:
+                # Json deserialize error: missing field `password` at line 1" = Extra field required
+                # self.import_objects('users', f"{file_path}users.json", overwrite, verbosity)
             ]
 
             for item in importable_types:
                 file_suffix = item.replace("/", "-")
                 self.import_objects(
-                    item, f"{file_path}{file_suffix}.json", overwrite, verbosity
+                    item,
+                    f"{file_path}{item}",
+                    overwrite=overwrite,
+                    verbosity=verbosity,
+                    split=split,
+                )
+
+        elif object_type == "all":
+            importable_types = [
+                "functions",
+                "pipelines",
+                "alerts",
+                "alerts/destinations",
+                "alerts/templates",
+                "dashboards",
+            ]
+
+            for item in importable_types:
+                file_suffix = item.replace("/", "-")
+                self.import_objects(
+                    item,
+                    f"{file_path}{file_suffix}.json",
+                    overwrite=overwrite,
+                    verbosity=verbosity,
                 )
         else:
-            self.import_objects(object_type, file_path, overwrite, verbosity)
+            self.import_objects(
+                object_type, file_path, overwrite=overwrite, verbosity=verbosity
+            )
