@@ -28,6 +28,10 @@ repos:
     rev: 25.1.0
     hooks:
       - id: black
+  - repo: https://github.com/PyCQA/pylint
+    rev: v3.3.5
+    hooks:
+      - id: pylint
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
