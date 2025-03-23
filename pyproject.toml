@@ -20,7 +20,7 @@ pydantic = "<2.0.0"
 sqlglot = "^17.3.0"
 
 [tool.optional-dependencies]
-tests = ["pytest"]
+tests = ["pytest", "jmespath"]
 
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
