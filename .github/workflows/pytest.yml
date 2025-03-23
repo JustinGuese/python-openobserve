@@ -11,7 +11,8 @@ permissions: {}
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: read
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.9", "3.11", "3.12", "3.13"]
