@@ -26,9 +26,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest pytest-cov
-          pip install jmespath python-dotenv
+          pip install jmespath python-dotenv pandas
           # FIXME! not installing tests dependencies
-          pip install '.[tests]'
+          pip install '.[all]'
       - name: Test with pytest
         run: |
           pytest tests/test_*.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
