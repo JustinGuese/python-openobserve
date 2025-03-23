@@ -21,6 +21,10 @@ sqlglot = "~=26.4.0"
 
 [tool.optional-dependencies]
 tests = ["pytest", "jmespath", "python-dotenv"]
+pandas = [
+    "pandas>2.2"
+]
+all = ['pandas', 'tests']
 
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
