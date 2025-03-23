@@ -31,7 +31,8 @@ jobs:
           pip install '.[all]'
       - name: Test with pytest
         run: |
-          pytest tests/test_*.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
+          [ -f .env ] && pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
+          pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
         if: ${{ always() }}
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
