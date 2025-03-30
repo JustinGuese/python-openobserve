@@ -37,6 +37,15 @@ repos:
                   # E1101: Instance of 'LookupDict' has no 'ok' member (no-member)
                   '--generated-member=requests.codes.ok'
               ]
+  # https://github.com/python/mypy/issues/13916
+  # https://jaredkhan.com/blog/mypy-pre-commit
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: f40886d54c729f533f864ed6ce584e920feb0af7  # 1.15.0
+    hooks:
+      - id: mypy
+        language: system
+        pass_filenames: false
+        args: ['.']
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
