@@ -19,17 +19,4 @@ permissions:
 
 jobs:
   scan:
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # tag=v4.2.2
-        with:
-          persist-credentials: false
-      - name: Install dependencies
-        run: |
-          sudo apt-get -y install pipx
-          pipx install poetry
-      - name: Ensure have poetry.lock
-        run: |
-          poetry install
-        continue-on-error: true
-      - uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@764c91816374ff2d8fc2095dab36eecd42d61638"  # v1.9.2
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@764c91816374ff2d8fc2095dab36eecd42d61638"  # v1.9.2
