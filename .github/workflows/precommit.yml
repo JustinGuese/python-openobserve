@@ -31,7 +31,7 @@ jobs:
       - name: Install mypy
         run: |
           set -x
-          pip install mypy
+          pip install mypy types-requests types-jmespath pandas-stubs
           mypy --install-types .
         continue-on-error: true
       - uses: pre-commit/action@v3.0.1
