@@ -28,6 +28,12 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
         continue-on-error: true
+      - name: Install mypy
+        run: |
+          set -x
+          pip install mypy
+          mypy --install-types .
+        continue-on-error: true
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files --show-diff-on-failure
