@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pprint import pprint
 from unittest.mock import patch
 import pytest  # type: ignore
+import sqlglot  # type: ignore
 import jmespath
 from python_openobserve.openobserve import OpenObserve
 
@@ -140,6 +141,55 @@ def mock_post(*args, **kwargs):
     return MockResponse({"id": 1, "name": "John Doe"}, 200)
 
 
+def mock_post502(*args, **kwargs):
+    """MockResponse 502 function for openobserve calls of requests.post"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.post"""
+
+        def __init__(self, json_data, status_code, text, url):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+            self.url = url
+
+        def json(self):
+            return self.json_data
+
+    if "/api/default/_search" in url:
+        return MockResponse({}, 502, "", "https://openobserve.example.com")
+
+    return MockResponse({}, 502, "", "https://openobserve.example.com")
+
+
+def mock_post500(*args, **kwargs):
+    """MockResponse 500 function for openobserve calls of requests.post"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.post"""
+
+        def __init__(self, json_data, status_code, text, url):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+            self.url = url
+
+        def json(self):
+            return self.json_data
+
+    if "/api/default/_search" in url:
+        return MockResponse(
+            {},
+            500,
+            '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: INVALID"}',
+            "https://openobserve.example.com",
+        )
+
+    return MockResponse({}, 500, "", "https://openobserve.example.com")
+
+
 def test_connection_settings():
     """Ensure have connection settings from environment"""
     assert OO_HOST
@@ -234,3 +284,106 @@ def test_search1_dftypes(mock_post):
     assert df_search_results.shape
     assert not df_search_results.columns.empty
     assert df_search_results["_timestamp"].dtypes == "datetime64[ns]"
+
+
+@patch("requests.post", side_effect=mock_post502)
+def test_search_sql_invalid1(mock_post502):
+    """Ensure error on invalid sql input"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT NOT SQL"
+    start_timeperiod = datetime.now() - timedelta(days=7)
+    end_timeperiod = datetime.now()
+    with pytest.raises(Exception, match="Openobserve returned 502."):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
+
+
+@patch("requests.post", side_effect=mock_post500)
+def test_search_sql_invalid2(mock_post500):
+    """Ensure error on invalid sql input"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "INVALID"
+    start_timeperiod = datetime.now() - timedelta(days=7)
+    end_timeperiod = datetime.now()
+    with pytest.raises(
+        Exception,
+        match=(
+            "Openobserve returned 500. Text: "
+            '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: INVALID"}'
+        ),
+    ):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
+
+
+@patch("requests.post", side_effect=mock_post500)
+def test_search_sql_invalid3(mock_post500):
+    """Ensure error on invalid sql input"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "NOT SQL"
+    start_timeperiod = datetime.now() - timedelta(days=7)
+    end_timeperiod = datetime.now()
+    with pytest.raises(
+        Exception,
+        match=("Openobserve returned 500. Text: "),
+    ):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
+
+
+@patch("requests.post", side_effect=mock_post500)
+def test_search_sql_invalid4(mock_post500):
+    """Ensure error on invalid sql input"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "123"
+    start_timeperiod = datetime.now() - timedelta(days=7)
+    end_timeperiod = datetime.now()
+    with pytest.raises(
+        Exception,
+        match=("Openobserve returned 500. Text: "),
+    ):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
+
+
+def test_search_sql_parse_error1():
+    """Ensure par error on sql input"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = 'SELECT _timestamp FROM (SELECT _timestamp FROM "default"'
+    start_timeperiod = datetime.now() - timedelta(days=7)
+    end_timeperiod = datetime.now()
+
+    # Warning! "SQLGlot does not aim to be a SQL validator"
+    #   https://github.com/tobymao/sqlglot?tab=readme-ov-file#faq
+    with pytest.raises(sqlglot.errors.ParseError, match=r"Expecting \)"):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
+
+
+def test_search_time_invalid1():
+    """Ensure error on invalid time input (float)"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = 'SELECT log_file_name,count(*) FROM "default" GROUP BY log_file_name'
+    start_timeperiod = 0.1
+    end_timeperiod = 0
+    with pytest.raises(Exception, match="Search invalid start_time input"):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
+
+
+def test_search_time_invalid2():
+    """Ensure error on invalid time input (bytes)"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = 'SELECT log_file_name,count(*) FROM "default" GROUP BY log_file_name'
+    start_timeperiod = b"abc"
+    end_timeperiod = 0
+    with pytest.raises(Exception, match="Search invalid start_time input"):
+        oo_conn.search(
+            sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
+        )
