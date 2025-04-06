@@ -59,11 +59,6 @@ repos:
         # exclude: .*/tests/.*
   - repo: local
     hooks:
-      - id: gitleaks
-        name: Gitleaks
-        entry: bash -c 'gitleaks detect --source . -v'
-        language: system
-        stages: ["pre-commit", "pre-push"]
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
