@@ -36,6 +36,10 @@ jobs:
           pip install -e .
           pip freeze | tee requirements.txt
 
+      - name: Check requirements.txt
+        run: |
+          cat requirements.txt
+
       - run: guarddog pypi verify requirements.txt --output-format sarif --exclude-rules repository_integrity_mismatch > guarddog.sarif
 
       - name: View SARIF file
