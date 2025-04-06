@@ -29,6 +29,13 @@ jobs:
       - name: Install GuardDog
         run: pip install guarddog
 
+      - name: Generate requirements.txt
+        run: |
+          python3 -mvenv venv
+          . venv/bin/activate
+          pip install -e .
+          pip freeze | tee requirements.txt
+
       - run: guarddog pypi verify requirements.txt --output-format sarif --exclude-rules repository_integrity_mismatch > guarddog.sarif
 
       - name: Upload SARIF file to GitHub
