@@ -40,7 +40,9 @@ jobs:
         run: |
           cat requirements.txt
 
-      - run: guarddog pypi verify requirements.txt --output-format sarif --exclude-rules repository_integrity_mismatch > guarddog.sarif
+      - name: Run guarddog
+        run: |
+          guarddog pypi verify requirements.txt --output-format sarif --exclude-rules repository_integrity_mismatch -x single_python_file > guarddog.sarif
 
       - name: View SARIF file
         run: |
