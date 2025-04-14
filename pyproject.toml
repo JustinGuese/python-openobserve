@@ -19,6 +19,9 @@ requests = "^2.31.0"
 pydantic = "~=2.10"
 sqlglot = "~=26.4.0"
 
+[tool.optional-dependencies]
+tests = ["pytest", "jmespath", "python-dotenv"]
+
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
 
