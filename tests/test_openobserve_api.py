@@ -205,6 +205,20 @@ def test_search1_dftypes():
     assert not df_search_results.empty
     assert df_search_results.shape
     assert not df_search_results.columns.empty
+    assert df_search_results["_timestamp"].dtypes == "int64"
+
+    df_search_results = oo_conn.search2df(
+        sql,
+        start_time=start_timeperiod,
+        end_time=end_timeperiod,
+        verbosity=5,
+        timestamp_conversion_auto=True,
+    )
+    pprint(df_search_results)
+    pprint(df_search_results.dtypes)
+    assert not df_search_results.empty
+    assert df_search_results.shape
+    assert not df_search_results.columns.empty
     assert df_search_results["_timestamp"].dtypes == "datetime64[ns]"
 
 
@@ -311,3 +325,66 @@ def test_search_time_invalid2():
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
         )
+
+
+# fixed bug: failed attempt to convert journald field 'body___monotonic_timestamp',
+# 'body__runtime_scope', and kunai 'info_utc_time' from __intts2datetime just
+# detecting 'time' in key
+def test_search_time_conversion1(capsys):
+    """Repeat time conversion issue"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT * FROM \"kunai\" WHERE data_path LIKE '/etc/sudoers.d/%' LIMIT 1"
+    start_timeperiod = datetime.now() - timedelta(days=1)
+    end_timeperiod = datetime.now()
+
+    with pytest.raises(
+        UnboundLocalError,
+        match=(
+            "cannot access local variable 'timestamp_out' where "
+            "it is not associated with a value"
+        ),
+    ):
+        oo_conn.search(
+            sql,
+            start_time=start_timeperiod,
+            end_time=end_timeperiod,
+            verbosity=5,
+            timestamp_conversion_auto=True,
+        )
+        captured = capsys.readouterr()
+        assert "could not convert timestamp:" in captured.out
+
+
+def test_search_time_conversion2(capsys):
+    """Ensure no time conversion issue if no auto conversion"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT * FROM \"kunai\" WHERE data_path LIKE '/etc/sudoers.d/%' LIMIT 1"
+    start_timeperiod = datetime.now() - timedelta(days=1)
+    end_timeperiod = datetime.now()
+    oo_conn.search(
+        sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=5
+    )
+    captured = capsys.readouterr()
+    assert "could not convert timestamp:" not in captured.out
+
+
+def test_search_time_conversion3(capsys):
+    """Ensure correct explicit time conversion with search2df()"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT * FROM \"kunai\" WHERE data_path LIKE '/etc/sudoers.d/%' LIMIT 1"
+    start_timeperiod = datetime.now() - timedelta(days=1)
+    end_timeperiod = datetime.now()
+    df_res = oo_conn.search2df(
+        sql,
+        start_time=start_timeperiod,
+        end_time=end_timeperiod,
+        verbosity=5,
+        timestamp_columns=["info_utc_time"],
+    )
+    captured = capsys.readouterr()
+    assert "could not convert timestamp:" not in captured.out
+    assert df_res["_timestamp"].dtypes == "datetime64[ns]"
+    assert df_res["info_utc_time"].dtypes == "datetime64[ns, UTC]"
+    # python Objects aka string
+    assert df_res["body___monotonic_timestamp"].dtypes == "O"
+    # assert df_res["body__runtime_scope"].dtypes == "O"

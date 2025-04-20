@@ -283,6 +283,20 @@ def test_search1_dftypes(mock_post):
     assert not df_search_results.empty
     assert df_search_results.shape
     assert not df_search_results.columns.empty
+    assert df_search_results["_timestamp"].dtypes == "int64"
+
+    df_search_results = oo_conn.search2df(
+        sql,
+        start_time=start_timeperiod,
+        end_time=end_timeperiod,
+        verbosity=5,
+        timestamp_conversion_auto=True,
+    )
+    pprint(df_search_results)
+    pprint(df_search_results.dtypes)
+    assert not df_search_results.empty
+    assert df_search_results.shape
+    assert not df_search_results.columns.empty
     assert df_search_results["_timestamp"].dtypes == "datetime64[ns]"
 
 
@@ -387,3 +401,165 @@ def test_search_time_invalid2():
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
         )
+
+
+def mock_post_kunai(*args, **kwargs):
+    """MockResponse function for openobserve calls of requests.post - kunai stream"""
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.post"""
+
+        def __init__(self, json_data, status_code):
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def json(self):
+            return self.json_data
+
+    return MockResponse(
+        {
+            "took": 155,
+            "hits": [
+                {
+                    "_collector": "myhost",
+                    "_messagetime": 1745154631656901,
+                    "_timestamp": 1745154631658843,
+                    "body___monotonic_timestamp": "3284525466301",
+                    "body__boot_id": "4ec5901164ce4567acbc02b0ac3bd8e6",
+                    "body__cmdline": "/usr/bin/kunai run -c /etc/kunai/config.yaml",
+                    "body__comm": "kunai",
+                    "body__exe": "/usr/bin/kunai",
+                    "body__gid": "0",
+                    "body__hostname": "myhost",
+                    "body__machine_id": "f7e1234db2d84830789e33af0a1123b8",
+                    "body__pid": "40227",
+                    "body__selinux_context": "unconfined\n",
+                    "body__stream_id": "fa4a687bf8fc46b480b128f9bcd44d32",
+                    "body__systemd_cgroup": "/system.slice/00-kunai.service",
+                    "body__systemd_invocation_id": "db5c9912f22945e884f659cb5a5ca392",
+                    "body__systemd_slice": "system.slice",
+                    "body__systemd_unit": "00-kunai.service",
+                    "body__transport": "stdout",
+                    "body__uid": "0",
+                    "body_priority": "6",
+                    "body_syslog_facility": "3",
+                    "body_syslog_identifier": "kunai",
+                    "data_ancestors": (
+                        "/usr/lib/systemd/systemd|/usr/sbin/sshd|"
+                        "/usr/sbin/sshd|/usr/sbin/sshd|/usr/bin/bash"
+                    ),
+                    "data_command_line": "sudo tail -f /var/log/syslog",
+                    "data_exe_path": "/usr/bin/sudo",
+                    "data_path": "/etc/sudoers.d/zfs",
+                    "dropped_attributes_count": 0,
+                    "host_name": "myhost",
+                    "info_event_batch": 68859059,
+                    "info_event_id": 82,
+                    "info_event_name": "read_config",
+                    "info_event_source": "kunai",
+                    "info_event_uuid": "83c44d36-12d3-4f56-0f81-16a91ad5f51e",
+                    "info_host_container": '{"name":"myhost","type":null}',
+                    "info_host_name": "myhost",
+                    "info_host_uuid": "e4984793-123f-1234-a5a0-e21817caa789",
+                    "info_parent_task_flags": "0x400000",
+                    "info_parent_task_gid": 1008,
+                    "info_parent_task_group": "?",
+                    "info_parent_task_guuid": "cf987f3f-bc9d-0b00-b731-b345eadc0000",
+                    "info_parent_task_name": "bash",
+                    "info_parent_task_namespaces": '{"mnt":4026531841}',
+                    "info_parent_task_pid": 56554,
+                    "info_parent_task_tgid": 56554,
+                    "info_parent_task_uid": 1006,
+                    "info_parent_task_user": "?",
+                    "info_parent_task_zombie": False,
+                    "info_task_flags": "0x400100",
+                    "info_task_gid": 1008,
+                    "info_task_group": "?",
+                    "info_task_guuid": "5cc01027-12ab-0b00-b789-b359b83b0123",
+                    "info_task_name": "sudo",
+                    "info_task_namespaces": '{"mnt":4026531841}',
+                    "info_task_pid": 15288,
+                    "info_task_tgid": 15288,
+                    "info_task_uid": 0,
+                    "info_task_user": "?",
+                    "info_task_zombie": False,
+                    "info_utc_time": "2025-04-20T12:34:56.656901530Z",
+                    "os_type": "linux",
+                    "severity": 0,
+                }
+            ],
+            "total": 27179431,
+            "from": 0,
+            "size": 1,
+            "scan_size": 28943,
+        },
+        200,
+    )
+
+
+# fixed bug: failed attempt to convert journald field 'body___monotonic_timestamp',
+# 'body__runtime_scope', and kunai 'info_utc_time' from __intts2datetime just
+# detecting 'time' in key
+@patch("requests.post", side_effect=mock_post_kunai)
+def test_search_time_conversion1(mock_post_kunai, capsys):
+    """Repeat time conversion issue"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT * FROM \"kunai\" WHERE data_path LIKE '/etc/sudoers.d/%' LIMIT 1"
+    start_timeperiod = datetime.now() - timedelta(days=1)
+    end_timeperiod = datetime.now()
+
+    with pytest.raises(
+        UnboundLocalError,
+        match=(
+            # different message between python 3.9 and 3.11+
+            r"(cannot access local variable 'timestamp_out' where "
+            "it is not associated with a value|"
+            "local variable 'timestamp_out' referenced before assignment)"
+        ),
+    ):
+        oo_conn.search(
+            sql,
+            start_time=start_timeperiod,
+            end_time=end_timeperiod,
+            verbosity=5,
+            timestamp_conversion_auto=True,
+        )
+        captured = capsys.readouterr()
+        assert "could not convert timestamp:" in captured.out
+
+
+@patch("requests.post", side_effect=mock_post_kunai)
+def test_search_time_conversion2(mock_post_kunai, capsys):
+    """Ensure no time conversion issue if no auto conversion"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT * FROM \"kunai\" WHERE data_path LIKE '/etc/sudoers.d/%' LIMIT 1"
+    start_timeperiod = datetime.now() - timedelta(days=1)
+    end_timeperiod = datetime.now()
+    oo_conn.search(
+        sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=5
+    )
+    captured = capsys.readouterr()
+    assert "could not convert timestamp:" not in captured.out
+
+
+@patch("requests.post", side_effect=mock_post_kunai)
+def test_search_time_conversion3(mock_post_kunai, capsys):
+    """Ensure correct explicit time conversion with search2df()"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    sql = "SELECT * FROM \"kunai\" WHERE data_path LIKE '/etc/sudoers.d/%' LIMIT 1"
+    start_timeperiod = datetime.now() - timedelta(days=1)
+    end_timeperiod = datetime.now()
+    df_res = oo_conn.search2df(
+        sql,
+        start_time=start_timeperiod,
+        end_time=end_timeperiod,
+        verbosity=5,
+        timestamp_columns=["info_utc_time"],
+    )
+    captured = capsys.readouterr()
+    assert "could not convert timestamp:" not in captured.out
+    assert df_res["_timestamp"].dtypes == "datetime64[ns]"
+    assert df_res["info_utc_time"].dtypes == "datetime64[ns, UTC]"
+    # python Objects aka string
+    assert df_res["body___monotonic_timestamp"].dtypes == "O"
+    # assert df_res["body__runtime_scope"].dtypes == "O"
