@@ -16,8 +16,11 @@ include = [
 [tool.poetry.dependencies]
 python = ">3.9"
 requests = "^2.31.0"
-pydantic = "<2.0.0"
-sqlglot = "^17.3.0"
+pydantic = "~=2.10"
+sqlglot = "~=26.4.0"
+
+[tool.optional-dependencies]
+tests = ["pytest", "jmespath", "python-dotenv"]
 
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
