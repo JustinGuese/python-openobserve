@@ -2,7 +2,7 @@ import requests
 import base64
 from datetime import datetime
 from collections.abc import MutableMapping
-from typing import List, Dict, Union, Optional, Any
+from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
 import sqlglot
 import json
@@ -246,6 +246,23 @@ class OpenObserve:
             return pandas.json_normalize(response_json[key])
         return response_json
 
+    def list_objects2df(self, object_type: str, verbosity: int = 0) -> pandas.DataFrame:
+        """
+        List available objects for given type
+        Output: Dataframe
+        """
+        key_mapping = {
+            "dashboards": "dashboards",
+            "users": "data",
+            "alerts/destinations": 0,
+            "alerts/templates": 0,
+        }
+        key = key_mapping.get(object_type, "list")
+
+        res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
+
+        return pandas.json_normalize(res_json[key])  # type: ignore[index]
+
     # pylint: disable=too-many-branches
     def export_objects_split(
         self,
@@ -302,7 +319,6 @@ class OpenObserve:
                     0,
                 )
         return True
-
 
     def config_export(
         self,
