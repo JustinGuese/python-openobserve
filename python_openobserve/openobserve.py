@@ -143,7 +143,7 @@ class OpenObserve:
         hits = [self.__intts2datetime(x) for x in response_json["hits"]]
 
         if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(hits["hits"])
+            return pandas.json_normalize(hits)
         return hits
 
     def _execute_api_request(
