@@ -5,7 +5,16 @@ from collections.abc import MutableMapping
 from typing import List, Dict, Union, Optional, Any
 import sqlglot
 import json
-import pandas
+
+try:
+    import pandas
+
+    HAVE_MODULE_PANDAS = True
+except ImportError:
+    print(
+        "Can't import pandas. dataframe output, csv and xlsx export will be unavailable."
+    )
+    HAVE_MODULE_PANDAS = False
 
 
 def flatten(dictionary, parent_key="", separator="."):
@@ -133,8 +142,8 @@ class OpenObserve:
         response_json = self._handle_response(res, "search")
         hits = [self.__intts2datetime(x) for x in response_json["hits"]]
 
-        if outformat == "df":
-            return pandas.json_normalize(hits["hits"])
+        if outformat == "df" and HAVE_MODULE_PANDAS:
+            return pandas.json_normalize(hits)
         return hits
 
     def _execute_api_request(
@@ -172,14 +181,14 @@ class OpenObserve:
         https://openobserve.ai/docs/api/functions
         """
         response_json = self._execute_api_request("functions", verbosity)
-        if outformat == "df":
+        if outformat == "df" and HAVE_MODULE_PANDAS:
             return pandas.json_normalize(response_json["list"])
         return response_json
 
     def list_pipelines(self, verbosity: int = 0, outformat: str = "json"):
         """List available pipelines"""
         response_json = self._execute_api_request("pipelines", verbosity)
-        if outformat == "df":
+        if outformat == "df" and HAVE_MODULE_PANDAS:
             return pandas.json_normalize(response_json["list"])
         return response_json
 
@@ -211,7 +220,7 @@ class OpenObserve:
     def list_users(self, verbosity: int = 0, outformat: str = "json"):
         """List available users  https://openobserve.ai/docs/api/users"""
         response_json = self._execute_api_request("users", verbosity)
-        if outformat == "df":
+        if outformat == "df" and HAVE_MODULE_PANDAS:
             try:
                 return pandas.json_normalize(response_json["data"])
             except KeyError as err:
@@ -223,7 +232,7 @@ class OpenObserve:
     def list_dashboards(self, verbosity: int = 0, outformat: str = "json"):
         """List available dashboards  https://openobserve.ai/docs/api/dashboards"""
         response_json = self._execute_api_request("dashboards", verbosity)
-        if outformat == "df":
+        if outformat == "df" and HAVE_MODULE_PANDAS:
             return pandas.json_normalize(response_json["dashboards"])
         return response_json
 
@@ -241,7 +250,7 @@ class OpenObserve:
         key = key_mapping.get(object_type, "list")
         response_json = self._execute_api_request(object_type, verbosity)
 
-        if outformat == "df":
+        if outformat == "df" and HAVE_MODULE_PANDAS:
             return pandas.json_normalize(response_json[key])
         return response_json
 
