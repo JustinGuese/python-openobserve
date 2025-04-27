@@ -75,7 +75,9 @@ class OpenObserve:
 
             pprint(msg)
 
-    def _handle_response(self, res: requests.Response, action: str = "request") -> dict:
+    def _handle_response(
+        self, res: requests.Response, action: str = "request"
+    ) -> List[Dict]:
         """Handle API response and return JSON if successful"""
         if res.status_code != requests.codes.ok:
             raise Exception(
@@ -112,7 +114,7 @@ class OpenObserve:
                 flatdict[key] = self.__timestampConvert(val)
         return flatdict
 
-    def index(self, index: str, document: dict) -> dict:
+    def index(self, index: str, document: dict) -> List[dict]:
         """Index a document in OpenObserve"""
         assert isinstance(document, dict), "document must be a dict"
         document = self.__datetime2Str(flatten(document))
@@ -129,7 +131,8 @@ class OpenObserve:
         if response_json["status"][0]["failed"] > 0:
             raise Exception(
                 "Openobserve index failed. "
-                f"{response_json['status'][0]['error']}. document: {document}"
+                f"{response_json['status'][0]['error']}"
+                f". document: {document}"
             )
         return response_json
 
@@ -140,7 +143,6 @@ class OpenObserve:
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
         verbosity: int = 0,
-        outformat: str = "json",
     ) -> List[Dict]:
         """
         OpenObserve search function
@@ -171,8 +173,6 @@ class OpenObserve:
         response_json = self._handle_response(res, "search")
         hits = [self.__intts2datetime(x) for x in response_json["hits"]]
 
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(hits)
         return hits
 
     def _execute_api_request(
@@ -183,7 +183,7 @@ class OpenObserve:
         method: str = "GET",
         params: Optional[dict] = None,
         json_data: Optional[dict] = None,
-    ) -> dict:
+    ) -> List[Dict]:
         """Execute API request with proper error handling and debugging"""
         url = self.openobserve_url.replace("[STREAM]", endpoint)
         self._debug(url, verbosity)
@@ -216,6 +216,28 @@ class OpenObserve:
             raise ValueError(f"Unsupported method: {method}")
 
         return self._handle_response(res, f"{method}_{endpoint.split('/')[0]}")
+
+    def search2df(
+        self,
+        sql: str,
+        *,
+        start_time: Union[datetime, int] = 0,
+        end_time: Union[datetime, int] = 0,
+        verbosity: int = 0,
+    ) -> pandas.DataFrame:
+        """
+        OpenObserve search function with df output
+        https://openobserve.ai/docs/api/search/search/
+        """
+        res_json_hits = self.search(
+            sql,
+            start_time=start_time,
+            end_time=end_time,
+            verbosity=verbosity,
+        )
+        df_res = pandas.json_normalize(res_json_hits)
+
+        return df_res
 
     # pylint: disable=too-many-branches
     def export_objects_split(
@@ -274,22 +296,11 @@ class OpenObserve:
                 )
         return True
 
-    def list_objects(
-        self, object_type: str, verbosity: int = 0, outformat: str = "json"
-    ):
+    def list_objects(self, object_type: str, verbosity: int = 0) -> List[Dict]:
         """List available objects for given type"""
-        key_mapping = {
-            "dashboards": "dashboards",
-            "users": "data",
-            "alerts/destinations": 0,
-            "alerts/templates": 0,
-        }
 
-        key = key_mapping.get(object_type, "list")
         response_json = self._execute_api_request(object_type, verbosity=verbosity)
 
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json[key])
         return response_json
 
     def list_objects2df(self, object_type: str, verbosity: int = 0) -> pandas.DataFrame:
@@ -356,7 +367,10 @@ class OpenObserve:
 
                 for name, object_data in data.items():
                     self.export_objects_split(
-                        object_data[0], object_data[1], file_path, verbosity=verbosity
+                        object_data[0],
+                        object_data[1],
+                        file_path,
+                        verbosity=verbosity,
                     )
             elif split is True and flat is True:
                 print("FIXME! Not implemented")
