@@ -34,7 +34,7 @@ jobs:
           python3 -mvenv venv
           . venv/bin/activate
           pip install -e .
-          pip freeze | tee requirements.txt
+          pip freeze | grep -v -e requirements-guarddog-ignore.txt | tee requirements.txt
 
       - name: Check requirements.txt
         run: |
