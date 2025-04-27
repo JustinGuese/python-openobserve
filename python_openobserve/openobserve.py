@@ -128,10 +128,10 @@ class OpenObserve:
         )
         response_json = self._handle_response(res, "index")
 
-        if response_json["status"][0]["failed"] > 0:
+        if response_json["status"][0]["failed"] > 0:  # type:ignore[call-overload]
             raise Exception(
                 "Openobserve index failed. "
-                f"{response_json['status'][0]['error']}"
+                f"{response_json['status'][0]['error']}"  # type:ignore[call-overload]
                 f". document: {document}"
             )
         return response_json
@@ -171,7 +171,10 @@ class OpenObserve:
         )
 
         response_json = self._handle_response(res, "search")
-        hits = [self.__intts2datetime(x) for x in response_json["hits"]]
+        hits = [
+            self.__intts2datetime(x)
+            for x in response_json["hits"]  # type:ignore[call-overload]
+        ]
 
         return hits
 
@@ -318,7 +321,7 @@ class OpenObserve:
 
         res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
 
-        return pandas.json_normalize(res_json[key])  # type: ignore[index]
+        return pandas.json_normalize(res_json[key])  # type: ignore[index,call-overload]
 
     def config_export(
         self,
@@ -361,14 +364,17 @@ class OpenObserve:
             if split is True and flat is False:
                 # split json
                 data = {
-                    name: [api_path, self.list_objects(api_path, verbosity=verbosity)]
+                    name: [
+                        api_path,
+                        self.list_objects(api_path, verbosity=verbosity),
+                    ]  # type:ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
                 for name, object_data in data.items():
                     self.export_objects_split(
-                        object_data[0],
-                        object_data[1],
+                        object_data[0],  # type:ignore[arg-type]
+                        object_data[1],  # type:ignore[arg-type]
                         file_path,
                         verbosity=verbosity,
                     )
@@ -377,7 +383,9 @@ class OpenObserve:
                 sys.exit(1)
             else:
                 data = {
-                    name: self.list_objects(api_path, verbosity=verbosity)
+                    name: self.list_objects(
+                        api_path, verbosity=verbosity
+                    )  # type:ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
