@@ -67,6 +67,37 @@ def mock_get(*args, **kwargs):
     return MockResponse({"id": 1, "name": "John Doe"}, 200)
 
 
+def mock_get401(*args, **kwargs):
+    """MockResponse 401 function for openobserve calls of requests.get"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.get"""
+
+        def __init__(self, json_data, status_code, text):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+
+        def json(self):
+            return self.json_data
+
+    if "/api/default/streams" in url:
+        return MockResponse(
+            {},
+            401,
+            "Unauthorized Access",
+        )
+    elif "/api/default/users" in url:
+        return MockResponse(
+            {},
+            401,
+            "Unauthorized Access",
+        )
+
+    return MockResponse({}, 401, "Unauthorized Access")
+
+
 def mock_post(*args, **kwargs):
     """MockResponse function for openobserve calls of requests.post"""
     url = args[0]
