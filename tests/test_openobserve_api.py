@@ -337,22 +337,15 @@ def test_search_time_conversion1(capsys):
     start_timeperiod = datetime.now() - timedelta(days=1)
     end_timeperiod = datetime.now()
 
-    with pytest.raises(
-        UnboundLocalError,
-        match=(
-            "cannot access local variable 'timestamp_out' where "
-            "it is not associated with a value"
-        ),
-    ):
-        oo_conn.search(
-            sql,
-            start_time=start_timeperiod,
-            end_time=end_timeperiod,
-            verbosity=5,
-            timestamp_conversion_auto=True,
-        )
-        captured = capsys.readouterr()
-        assert "could not convert timestamp:" in captured.out
+    oo_conn.search(
+        sql,
+        start_time=start_timeperiod,
+        end_time=end_timeperiod,
+        verbosity=5,
+        timestamp_conversion_auto=True,
+    )
+    captured = capsys.readouterr()
+    assert "could not convert timestamp:" in captured.out
 
 
 def test_search_time_conversion2(capsys):
