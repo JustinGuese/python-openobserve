@@ -86,9 +86,15 @@ class OpenObserve:
         return res.json()
 
     # pylint: disable=invalid-name
-    def __timestampConvert(self, timestamp: datetime) -> int:
-        """Convert Python datetime to OpenObserve timestamp (microseconds)"""
-        return int(timestamp.timestamp() * 1000000)
+    def __timestampConvert(self, timestamp: datetime, verbosity: int = 0) -> int:
+        try:
+            self._debug(f"__timestampConvert input: {timestamp}", verbosity, 2)
+            return int(timestamp.timestamp() * 1000000)
+        except Exception as exc:
+            # pylint: disable=raising-bad-type
+            raise (  # type: ignore[misc]
+                f"Exception from __timestampConvert for timestamp {timestamp}: {exc}"
+            )
 
     # pylint: disable=invalid-name
     def __unixTimestampConvert(self, timestamp: int) -> datetime:
@@ -150,9 +156,17 @@ class OpenObserve:
         https://openobserve.ai/docs/api/search/search/
         """
         if isinstance(start_time, datetime):
-            start_time = self.__timestampConvert(start_time)
+            start_time = self.__timestampConvert(start_time, verbosity)
+        elif not isinstance(start_time, int):
+            raise Exception(
+                "Search invalid start_time input, neither datetime, nor int"
+            )
         if isinstance(end_time, datetime):
-            end_time = self.__timestampConvert(end_time)
+            end_time = self.__timestampConvert(end_time, verbosity)
+        elif not isinstance(end_time, int):
+            raise Exception("Search invalid end_time input, neither datetime, nor int")
+
+        self._debug(f"Query Time start {start_time} end {end_time}", verbosity, 1)
 
         # Verify SQL syntax
         try:

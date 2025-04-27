@@ -293,7 +293,7 @@ def test_search_sql_invalid1(mock_post502):
     sql = "SELECT NOT SQL"
     start_timeperiod = datetime.now() - timedelta(days=7)
     end_timeperiod = datetime.now()
-    with pytest.raises(Exception, match="Openobserve returned 502."):
+    with pytest.raises(Exception, match="Openobserve search returned 502."):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
         )
@@ -309,7 +309,7 @@ def test_search_sql_invalid2(mock_post500):
     with pytest.raises(
         Exception,
         match=(
-            "Openobserve returned 500. Text: "
+            "Openobserve search returned 500. Text: "
             '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: INVALID"}'
         ),
     ):
@@ -327,7 +327,7 @@ def test_search_sql_invalid3(mock_post500):
     end_timeperiod = datetime.now()
     with pytest.raises(
         Exception,
-        match=("Openobserve returned 500. Text: "),
+        match=("Openobserve search returned 500. Text: "),
     ):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
@@ -343,7 +343,7 @@ def test_search_sql_invalid4(mock_post500):
     end_timeperiod = datetime.now()
     with pytest.raises(
         Exception,
-        match=("Openobserve returned 500. Text: "),
+        match=("Openobserve search returned 500. Text: "),
     ):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1

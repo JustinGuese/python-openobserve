@@ -214,7 +214,7 @@ def test_search_sql_invalid1():
     sql = "SELECT NOT SQL"
     start_timeperiod = datetime.now() - timedelta(days=7)
     end_timeperiod = datetime.now()
-    with pytest.raises(Exception, match="Openobserve returned 502."):
+    with pytest.raises(Exception, match="Openobserve search returned 502."):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
         )
@@ -229,7 +229,7 @@ def test_search_sql_invalid2():
     with pytest.raises(
         Exception,
         match=(
-            "Openobserve returned 500. Text: "
+            "Openobserve search returned 500. Text: "
             '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: INVALID"}'
         ),
     ):
@@ -247,9 +247,8 @@ def test_search_sql_invalid3():
     with pytest.raises(
         Exception,
         match=(
-            "Openobserve returned 500. Text: "
-            '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: NOT"}.'
-            r" url: .*"
+            "Openobserve search returned 500. Text: "
+            '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: NOT"}'
         ),
     ):
         oo_conn.search(
@@ -266,7 +265,7 @@ def test_search_sql_invalid4():
     with pytest.raises(
         Exception,
         match=(
-            "Openobserve returned 500. Text: "
+            "Openobserve search returned 500. Text: "
             '{"code":500,"message":"sql parser error: Expected: an SQL statement, found: 123"}'
         ),
     ):
