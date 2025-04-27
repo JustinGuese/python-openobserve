@@ -1,11 +1,19 @@
-import requests
+"""OpenObserve API module"""
+
+# pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods
 import base64
+import json
+
+# import glob
+import os
+import sys
 from datetime import datetime
 from collections.abc import MutableMapping
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
-import sqlglot
-import json
+
+import requests
+import sqlglot  # type: ignore
 
 try:
     import pandas
@@ -19,6 +27,7 @@ except ImportError:
 
 
 def flatten(dictionary, parent_key="", separator="."):
+    """Flatten dictionary"""
     items = []
     for key, value in dictionary.items():
         new_key = parent_key + separator + key if parent_key else key
@@ -30,13 +39,21 @@ def flatten(dictionary, parent_key="", separator="."):
 
 
 class OpenObserve:
+    """
+    OpenObserve class based on OpenObserve REST API
+    https://openobserve.ai/docs/api/
+    https://<openobserve server>/swagger/
+    """
+
     def __init__(
         self,
-        user: str,
-        password: str,
-        organisation: str = "default",
-        host: str = "http://localhost:5080",
-        verify: bool = True,
+        user,
+        password,
+        *,
+        organisation="default",
+        host="http://localhost:5080",
+        verify=True,
+        timeout=10,
     ) -> None:
         bas64encoded_creds = base64.b64encode(
             f"{user}:{password}".encode("utf-8")
@@ -48,10 +65,12 @@ class OpenObserve:
             "Authorization": f"Basic {bas64encoded_creds}",
         }
         self.verify = verify
+        self.timeout = timeout
 
     def _debug(self, msg: Any, verbosity: int, level: int = 1) -> None:
         """Print debug messages if verbosity level is sufficient"""
         if verbosity >= level:
+            # pylint: disable=import-outside-toplevel
             from pprint import pprint
 
             pprint(msg)
@@ -64,10 +83,12 @@ class OpenObserve:
             )
         return res.json()
 
+    # pylint: disable=invalid-name
     def __timestampConvert(self, timestamp: datetime) -> int:
         """Convert Python datetime to OpenObserve timestamp (microseconds)"""
         return int(timestamp.timestamp() * 1000000)
 
+    # pylint: disable=invalid-name
     def __unixTimestampConvert(self, timestamp: int) -> datetime:
         """Convert OpenObserve timestamp to Python datetime"""
         try:
@@ -83,6 +104,7 @@ class OpenObserve:
                 flatdict[key] = self.__unixTimestampConvert(val)
         return flatdict
 
+    # pylint: disable=invalid-name
     def __datetime2Str(self, flatdict: dict) -> dict:
         """Convert datetime fields in dict to timestamp integers"""
         for key, val in flatdict.items():
@@ -100,25 +122,30 @@ class OpenObserve:
             headers=self.headers,
             json=[document],
             verify=self.verify,
+            timeout=self.timeout,
         )
         response_json = self._handle_response(res, "index")
 
         if response_json["status"][0]["failed"] > 0:
             raise Exception(
-                f"Openobserve index failed. {response_json['status'][0]['error']}. document: {document}"
+                "Openobserve index failed. "
+                f"{response_json['status'][0]['error']}. document: {document}"
             )
         return response_json
 
     def search(
         self,
         sql: str,
+        *,
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
         verbosity: int = 0,
         outformat: str = "json",
     ) -> List[Dict]:
-        """Execute a search query using SQL"""
-        # Convert datetime objects to timestamps if needed
+        """
+        OpenObserve search function
+        https://openobserve.ai/docs/api/search/search/
+        """
         if isinstance(start_time, datetime):
             start_time = self.__timestampConvert(start_time)
         if isinstance(end_time, datetime):
@@ -138,6 +165,7 @@ class OpenObserve:
             json=query,
             headers=self.headers,
             verify=self.verify,
+            timeout=self.timeout,
         )
 
         response_json = self._handle_response(res, "search")
@@ -150,6 +178,7 @@ class OpenObserve:
     def _execute_api_request(
         self,
         endpoint: str,
+        *,
         verbosity: int = 0,
         method: str = "GET",
         params: Optional[dict] = None,
@@ -161,15 +190,27 @@ class OpenObserve:
 
         if method == "GET":
             res = requests.get(
-                url, headers=self.headers, params=params, verify=self.verify
+                url,
+                headers=self.headers,
+                params=params,
+                verify=self.verify,
+                timeout=self.timeout,
             )
         elif method == "POST":
             res = requests.post(
-                url, headers=self.headers, json=json_data, verify=self.verify
+                url,
+                headers=self.headers,
+                json=json_data,
+                verify=self.verify,
+                timeout=self.timeout,
             )
         elif method == "PUT":
             res = requests.put(
-                url, headers=self.headers, json=json_data, verify=self.verify
+                url,
+                headers=self.headers,
+                json=json_data,
+                verify=self.verify,
+                timeout=self.timeout,
             )
         else:
             raise ValueError(f"Unsupported method: {method}")
@@ -245,7 +286,7 @@ class OpenObserve:
         }
 
         key = key_mapping.get(object_type, "list")
-        response_json = self._execute_api_request(object_type, verbosity)
+        response_json = self._execute_api_request(object_type, verbosity=verbosity)
 
         if outformat == "df" and HAVE_MODULE_PANDAS:
             return pandas.json_normalize(response_json[key])
@@ -337,7 +378,11 @@ class OpenObserve:
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
 
         res = requests.post(
-            url, json=object_json, headers=self.headers, verify=self.verify
+            url,
+            json=object_json,
+            headers=self.headers,
+            verify=self.verify,
+            timeout=self.timeout,
         )
         self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=1)
         self._handle_response(res, f"create_object_{object_type}")
@@ -354,7 +399,11 @@ class OpenObserve:
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
 
         res = requests.put(
-            url, json=object_json, headers=self.headers, verify=self.verify
+            url,
+            json=object_json,
+            headers=self.headers,
+            verify=self.verify,
+            timeout=self.timeout,
         )
         self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=3)
         self._handle_response(res, f"update_object_{object_type}")

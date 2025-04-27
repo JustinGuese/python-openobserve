@@ -1,6 +1,6 @@
 """Pytest file for python-openobserve"""
 
-# pylint: disable=unused-argument,redefined-outer-name,missing-function-docstring,too-few-public-methods,no-else-return
+# pylint: disable=unused-argument,redefined-outer-name,missing-function-docstring,too-few-public-methods,no-else-return,duplicate-code
 from datetime import datetime, timedelta
 from pprint import pprint
 from unittest.mock import patch
