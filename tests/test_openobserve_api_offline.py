@@ -16,7 +16,7 @@ from python_openobserve.openobserve import OpenObserve
 # OO_PASS = ""
 
 
-OO_HOST = OO_USER = OO_PASS = "MOCK_INPUT"
+OO_HOST = OO_USER = OO_PASS = "MOCK_INPUT"  # nosec B105
 
 
 def mock_get(*args, **kwargs):
@@ -160,7 +160,9 @@ def test_list_object_streams(mock_get):
 @patch("requests.get", side_effect=mock_get401)
 def test_list_object_streams401(mock_get):
     """Ensure can list streams and have 'default' one (list_objects)"""
-    oo_conn = OpenObserve(host=OO_HOST, user="invalid@example.com", password="")
+    oo_conn = OpenObserve(
+        host=OO_HOST, user="invalid@example.com", password=""
+    )  # nosec B106
     with pytest.raises(
         Exception,
         match="Openobserve GET_streams returned 401. Text: Unauthorized Access",
