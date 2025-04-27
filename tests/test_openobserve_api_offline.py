@@ -4,6 +4,7 @@
 from datetime import datetime, timedelta
 from pprint import pprint
 from unittest.mock import patch
+import pytest  # type: ignore
 import jmespath
 from python_openobserve.openobserve import OpenObserve
 
@@ -162,7 +163,7 @@ def test_list_object_streams401(mock_get):
     oo_conn = OpenObserve(host=OO_HOST, user="invalid@example.com", password="")
     with pytest.raises(
         Exception,
-        match="Openobserve returned 401. Text: Unauthorized Access",
+        match="Openobserve GET_streams returned 401. Text: Unauthorized Access",
     ):
         oo_conn.list_objects("streams", verbosity=5)
 

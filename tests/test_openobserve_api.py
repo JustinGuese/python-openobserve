@@ -3,6 +3,7 @@
 import os
 from datetime import datetime, timedelta
 from pprint import pprint
+import pytest  # type: ignore
 import jmespath
 from dotenv import load_dotenv
 from python_openobserve.openobserve import OpenObserve
@@ -47,7 +48,7 @@ def test_list_object_streams401():
     oo_conn = OpenObserve(host=OO_HOST, user="invalid@example.com", password="")
     with pytest.raises(
         Exception,
-        match="Openobserve returned 401. Text: Unauthorized Access",
+        match="Openobserve GET_streams returned 401. Text: Unauthorized Access",
     ):
         oo_conn.list_objects("streams")
 
