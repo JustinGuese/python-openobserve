@@ -4,6 +4,7 @@
 from datetime import datetime, timedelta
 from pprint import pprint
 from unittest.mock import patch
+import pytest  # type: ignore
 import jmespath
 from python_openobserve.openobserve import OpenObserve
 
@@ -67,6 +68,37 @@ def mock_get(*args, **kwargs):
     return MockResponse({"id": 1, "name": "John Doe"}, 200)
 
 
+def mock_get401(*args, **kwargs):
+    """MockResponse 401 function for openobserve calls of requests.get"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.get"""
+
+        def __init__(self, json_data, status_code, text):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+
+        def json(self):
+            return self.json_data
+
+    if "/api/default/streams" in url:
+        return MockResponse(
+            {},
+            401,
+            "Unauthorized Access",
+        )
+    elif "/api/default/users" in url:
+        return MockResponse(
+            {},
+            401,
+            "Unauthorized Access",
+        )
+
+    return MockResponse({}, 401, "Unauthorized Access")
+
+
 def mock_post(*args, **kwargs):
     """MockResponse function for openobserve calls of requests.post"""
     url = args[0]
@@ -116,16 +148,6 @@ def test_connection_settings():
 
 
 @patch("requests.get", side_effect=mock_get)
-def test_list_streams(mock_get):
-    """Ensure can list streams and have 'default' one (list_streams)"""
-    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
-    res = oo_conn.list_streams(verbosity=5)
-    # pprint(res)
-    default_stream = jmespath.search("list[?name=='default']", res)
-    assert default_stream
-
-
-@patch("requests.get", side_effect=mock_get)
 def test_list_object_streams(mock_get):
     """Ensure can list streams and have 'default' one (list_objects)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -133,6 +155,17 @@ def test_list_object_streams(mock_get):
     pprint(res)
     default_stream = jmespath.search("list[?name=='default']", res)
     assert default_stream
+
+
+@patch("requests.get", side_effect=mock_get401)
+def test_list_object_streams401(mock_get):
+    """Ensure can list streams and have 'default' one (list_objects)"""
+    oo_conn = OpenObserve(host=OO_HOST, user="invalid@example.com", password="")
+    with pytest.raises(
+        Exception,
+        match="Openobserve GET_streams returned 401. Text: Unauthorized Access",
+    ):
+        oo_conn.list_objects("streams", verbosity=5)
 
 
 @patch("requests.get", side_effect=mock_get)

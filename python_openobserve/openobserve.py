@@ -176,102 +176,6 @@ class OpenObserve:
 
         return self._handle_response(res, f"{method}_{endpoint.split('/')[0]}")
 
-    def list_functions(self, verbosity: int = 0, outformat: str = "json"):
-        """
-        List available functions
-        https://openobserve.ai/docs/api/functions
-        """
-        response_json = self._execute_api_request("functions", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_pipelines(self, verbosity: int = 0, outformat: str = "json"):
-        """List available pipelines"""
-        response_json = self._execute_api_request("pipelines", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_streams(
-        self,
-        schema: bool = False,
-        streamtype: str = "logs",
-        verbosity: int = 0,
-        outformat: str = "json",
-    ):
-        """
-        List available streams
-        https://openobserve.ai/docs/api/stream/list/
-        """
-        response_json = self._execute_api_request(
-            f"streams?fetchSchema={schema}&type={streamtype}", verbosity
-        )
-        if outformat == "df":
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_alerts(self, verbosity: int = 0, outformat: str = "json"):
-        """List configured alerts on server"""
-        response_json = self._execute_api_request("alerts", verbosity)
-        if outformat == "df":
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_users(self, verbosity: int = 0, outformat: str = "json"):
-        """List available users  https://openobserve.ai/docs/api/users"""
-        response_json = self._execute_api_request("users", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            try:
-                return pandas.json_normalize(response_json["data"])
-            except KeyError as err:
-                raise Exception(f"Exception KeyError: {err}")
-            except Exception as err:
-                raise Exception(f"Exception: {err}")
-        return response_json
-
-    def list_dashboards(self, verbosity: int = 0, outformat: str = "json"):
-        """List available dashboards  https://openobserve.ai/docs/api/dashboards"""
-        response_json = self._execute_api_request("dashboards", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json["dashboards"])
-        return response_json
-
-    def list_objects(
-        self, object_type: str, verbosity: int = 0, outformat: str = "json"
-    ):
-        """List available objects for given type"""
-        key_mapping = {
-            "dashboards": "dashboards",
-            "users": "data",
-            "alerts/destinations": 0,
-            "alerts/templates": 0,
-        }
-
-        key = key_mapping.get(object_type, "list")
-        response_json = self._execute_api_request(object_type, verbosity)
-
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json[key])
-        return response_json
-
-    def list_objects2df(self, object_type: str, verbosity: int = 0) -> pandas.DataFrame:
-        """
-        List available objects for given type
-        Output: Dataframe
-        """
-        key_mapping = {
-            "dashboards": "dashboards",
-            "users": "data",
-            "alerts/destinations": 0,
-            "alerts/templates": 0,
-        }
-        key = key_mapping.get(object_type, "list")
-
-        res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
-
-        return pandas.json_normalize(res_json[key])  # type: ignore[index]
-
     # pylint: disable=too-many-branches
     def export_objects_split(
         self,
@@ -328,6 +232,41 @@ class OpenObserve:
                     0,
                 )
         return True
+
+    def list_objects(
+        self, object_type: str, verbosity: int = 0, outformat: str = "json"
+    ):
+        """List available objects for given type"""
+        key_mapping = {
+            "dashboards": "dashboards",
+            "users": "data",
+            "alerts/destinations": 0,
+            "alerts/templates": 0,
+        }
+
+        key = key_mapping.get(object_type, "list")
+        response_json = self._execute_api_request(object_type, verbosity)
+
+        if outformat == "df" and HAVE_MODULE_PANDAS:
+            return pandas.json_normalize(response_json[key])
+        return response_json
+
+    def list_objects2df(self, object_type: str, verbosity: int = 0) -> pandas.DataFrame:
+        """
+        List available objects for given type
+        Output: Dataframe
+        """
+        key_mapping = {
+            "dashboards": "dashboards",
+            "users": "data",
+            "alerts/destinations": 0,
+            "alerts/templates": 0,
+        }
+        key = key_mapping.get(object_type, "list")
+
+        res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
+
+        return pandas.json_normalize(res_json[key])  # type: ignore[index]
 
     def config_export(
         self,
@@ -390,62 +329,6 @@ class OpenObserve:
                 for name, object_data in data.items():
                     with open(f"{file_path}{name}.json", "w", encoding="utf-8") as f:
                         json.dump(object_data, f, ensure_ascii=False, indent=4)
-
-    def create_function(self, function_json: dict, verbosity: int = 0):
-        """Create function https://openobserve.ai/docs/api/function/create"""
-        url = self.openobserve_url.replace("[STREAM]", "functions")
-        self._debug(f"Create function url: {url}", verbosity)
-        self._debug(f"Create function json input: {function_json}", verbosity, level=2)
-
-        res = requests.post(
-            url, json=function_json, headers=self.headers, verify=self.verify
-        )
-        self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=1)
-        self._handle_response(res, "create_function")
-
-        self._debug("Create function completed", verbosity)
-        return True
-
-    def update_function(self, function_json: dict, verbosity: int = 0):
-        """Update function         https://openobserve.ai/docs/api/function/update"""
-        url = self.openobserve_url.replace(
-            "[STREAM]", f"functions/{function_json['name']}"
-        )
-        self._debug(f"Update function url: {url}", verbosity)
-        self._debug(f"Update function json input: {function_json}", verbosity, level=2)
-
-        res = requests.put(
-            url, json=function_json, headers=self.headers, verify=self.verify
-        )
-        self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=1)
-        self._handle_response(res, "update_function")
-
-        self._debug("Update function completed", verbosity)
-        return True
-
-    def import_functions(
-        self, file_path: str, overwrite: bool = False, verbosity: int = 0
-    ):
-        """Import functions from json file"""
-        self._debug(self.openobserve_url.replace("[STREAM]", "functions"), verbosity)
-
-        with open(file_path, "r") as json_file:
-            json_data = json.load(json_file)
-            self._debug(json_data, verbosity, level=2)
-
-            for function in json_data.get("list", []):
-                self._debug(function["name"], verbosity)
-                self._debug(function, verbosity, level=1)
-
-                try:
-                    return self.create_function(function, verbosity=verbosity)
-                except Exception:
-                    if overwrite:
-                        print(
-                            f"Overwrite enabled. Updating function {function['name']}"
-                        )
-                        return self.update_function(function, verbosity=verbosity)
-        return True
 
     def create_object(self, object_type: str, object_json: dict, verbosity: int = 0):
         """Create object"""

@@ -3,6 +3,7 @@
 import os
 from datetime import datetime, timedelta
 from pprint import pprint
+import pytest  # type: ignore
 import jmespath
 from dotenv import load_dotenv
 from python_openobserve.openobserve import OpenObserve
@@ -33,15 +34,6 @@ def test_connection_settings():
     assert "OPENOBSERVE_PASS" in os.environ
 
 
-def test_list_streams():
-    """Ensure can list streams and have 'default' one (list_streams)"""
-    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
-    res = oo_conn.list_streams()
-    # pprint(res)
-    default_stream = jmespath.search("list[?name=='default']", res)
-    assert default_stream
-
-
 def test_list_object_streams():
     """Ensure can list streams and have 'default' one (list_objects)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -49,6 +41,16 @@ def test_list_object_streams():
     # pprint(res)
     default_stream = jmespath.search("list[?name=='default']", res)
     assert default_stream
+
+
+def test_list_object_streams401():
+    """Ensure can list streams and have 'default' one (list_objects)"""
+    oo_conn = OpenObserve(host=OO_HOST, user="invalid@example.com", password="")
+    with pytest.raises(
+        Exception,
+        match="Openobserve GET_streams returned 401. Text: Unauthorized Access",
+    ):
+        oo_conn.list_objects("streams")
 
 
 def test_list_object_users():
