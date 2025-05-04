@@ -3,8 +3,6 @@ name: Upload Python Package to Test PyPI
 
 on:
   push:
-    branches:
-      - main
     tags:
       - '*'
   workflow_dispatch:
