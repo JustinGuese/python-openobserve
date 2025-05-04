@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-openobserve"
-version = "0.1.4"
+version = "0.2.0"
 description = ""
 authors = ["Justin Guese <guese.justin@gmail.com>"]
 license = "GNUv3"
