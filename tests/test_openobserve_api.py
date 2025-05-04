@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from pprint import pprint
 import pytest  # type: ignore
 import jmespath
-from dotenv import load_dotenv
+import requests
+from dotenv import load_dotenv  # type: ignore
 from python_openobserve.openobserve import OpenObserve
 
 # os.environ["REQUESTS_CA_BUNDLE"] = (
@@ -18,7 +19,7 @@ from python_openobserve.openobserve import OpenObserve
 
 load_dotenv()
 
-OO_HOST = OO_USER = OO_PASS = ""
+OO_HOST = OO_USER = OO_PASS = ""  # nosec B106 B105
 if "OPENOBSERVE_URL" in os.environ:
     OO_HOST = os.environ["OPENOBSERVE_URL"]
 if "OPENOBSERVE_USER" in os.environ:
@@ -34,6 +35,56 @@ def test_connection_settings():
     assert "OPENOBSERVE_PASS" in os.environ
 
 
+def test_connection_incorrect_params1():
+    """Ensure error if incorrect parameter"""
+    oo_conn = OpenObserve(host="invalid", user="***", password="")  # nosec B106
+    with pytest.raises(
+        requests.exceptions.MissingSchema,
+        match="Invalid URL",
+    ):
+        oo_conn.list_objects("streams")
+
+
+def test_connection_incorrect_params2():
+    """Ensure error if incorrect parameter"""
+    oo_conn = OpenObserve(
+        host="invalid", user="invalid@example.com", password="", timeout=3  # nosec B106
+    )
+    with pytest.raises(
+        requests.exceptions.MissingSchema,
+        match="Invalid URL",
+    ):
+        oo_conn.list_objects("streams")
+
+
+def test_connection_incorrect_params3():
+    """Ensure error if incorrect parameter"""
+    with pytest.raises(
+        TypeError,
+        match=(
+            r"OpenObserve.__init__\(\) missing 2 required positional arguments:"
+            " 'user' and 'password'"
+        ),
+    ):
+        # pylint: disable=no-value-for-parameter
+        OpenObserve()
+
+
+def test_connection_incorrect_params4():
+    """Ensure error if incorrect parameter"""
+    oo_conn = OpenObserve(
+        host="https://nonexistent.example.com",
+        user="invalid@example.com",
+        password="",  # nosec B106
+        timeout=3,
+    )
+    with pytest.raises(
+        Exception,
+        match="Max retries exceeded with url:",
+    ):
+        oo_conn.list_objects("streams")
+
+
 def test_list_object_streams():
     """Ensure can list streams and have 'default' one (list_objects)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -45,7 +96,9 @@ def test_list_object_streams():
 
 def test_list_object_streams401():
     """Ensure can list streams and have 'default' one (list_objects)"""
-    oo_conn = OpenObserve(host=OO_HOST, user="invalid@example.com", password="")
+    oo_conn = OpenObserve(
+        host=OO_HOST, user="invalid@example.com", password=""
+    )  # nosec B106
     with pytest.raises(
         Exception,
         match="Openobserve GET_streams returned 401. Text: Unauthorized Access",
@@ -120,12 +173,11 @@ def test_search1_df():
     sql = 'SELECT log_file_name,count(*) FROM "default" GROUP BY log_file_name'
     start_timeperiod = datetime.now() - timedelta(days=7)
     end_timeperiod = datetime.now()
-    df_search_results = oo_conn.search(
+    df_search_results = oo_conn.search2df(
         sql,
         start_time=start_timeperiod,
         end_time=end_timeperiod,
         verbosity=5,
-        outformat="df",
     )
     pprint(df_search_results)
     assert not df_search_results.empty
@@ -141,12 +193,11 @@ def test_search1_dftypes():
     sql = 'SELECT _timestamp FROM "default" order by _timestamp desc limit 1'
     start_timeperiod = datetime.now() - timedelta(days=7)
     end_timeperiod = datetime.now()
-    df_search_results = oo_conn.search(
+    df_search_results = oo_conn.search2df(
         sql,
         start_time=start_timeperiod,
         end_time=end_timeperiod,
         verbosity=5,
-        outformat="df",
     )
     pprint(df_search_results)
     pprint(df_search_results.dtypes)

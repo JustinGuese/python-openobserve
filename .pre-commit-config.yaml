@@ -24,6 +24,33 @@ repos:
       - id: check-xml
       # - id: detect-aws-credentials
       - id: check-docstring-first
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/pylint
+    rev: v3.3.5
+    hooks:
+      - id: pylint
+        additional_dependencies: ["requests", "sqlglot", "pandas", "pytest", "jmespath", "dotenv"]
+        args: [
+                  # E1101: Instance of 'LookupDict' has no 'ok' member (no-member)
+                  '--generated-member=requests.codes.ok'
+              ]
+  # https://github.com/python/mypy/issues/13916
+  # https://jaredkhan.com/blog/mypy-pre-commit
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: f40886d54c729f533f864ed6ce584e920feb0af7  # 1.15.0
+    hooks:
+      - id: mypy
+        language: system
+        pass_filenames: false
+        args: ['.']
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
@@ -37,11 +64,6 @@ repos:
         # exclude: .*/tests/.*
   - repo: local
     hooks:
-      - id: gitleaks
-        name: Gitleaks
-        entry: bash -c 'gitleaks detect --source . -v'
-        language: system
-        stages: ["pre-commit", "pre-push"]
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
