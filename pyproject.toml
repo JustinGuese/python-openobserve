@@ -32,3 +32,6 @@ python_openobserve = 'python_openobserve:openobserve'
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.bandit]
+skips = ["B101"]

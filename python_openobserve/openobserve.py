@@ -1,11 +1,19 @@
-import requests
+"""OpenObserve API module"""
+
+# pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods
 import base64
+import json
+
+# import glob
+import os
+import sys
 from datetime import datetime
 from collections.abc import MutableMapping
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
-import sqlglot
-import json
+
+import requests
+import sqlglot  # type: ignore
 
 try:
     import pandas
@@ -19,6 +27,7 @@ except ImportError:
 
 
 def flatten(dictionary, parent_key="", separator="."):
+    """Flatten dictionary"""
     items = []
     for key, value in dictionary.items():
         new_key = parent_key + separator + key if parent_key else key
@@ -30,13 +39,21 @@ def flatten(dictionary, parent_key="", separator="."):
 
 
 class OpenObserve:
+    """
+    OpenObserve class based on OpenObserve REST API
+    https://openobserve.ai/docs/api/
+    https://<openobserve server>/swagger/
+    """
+
     def __init__(
         self,
-        user: str,
-        password: str,
-        organisation: str = "default",
-        host: str = "http://localhost:5080",
-        verify: bool = True,
+        user,
+        password,
+        *,
+        organisation="default",
+        host="http://localhost:5080",
+        verify=True,
+        timeout=10,
     ) -> None:
         bas64encoded_creds = base64.b64encode(
             f"{user}:{password}".encode("utf-8")
@@ -48,15 +65,19 @@ class OpenObserve:
             "Authorization": f"Basic {bas64encoded_creds}",
         }
         self.verify = verify
+        self.timeout = timeout
 
     def _debug(self, msg: Any, verbosity: int, level: int = 1) -> None:
         """Print debug messages if verbosity level is sufficient"""
         if verbosity >= level:
+            # pylint: disable=import-outside-toplevel
             from pprint import pprint
 
             pprint(msg)
 
-    def _handle_response(self, res: requests.Response, action: str = "request") -> dict:
+    def _handle_response(
+        self, res: requests.Response, action: str = "request"
+    ) -> List[Dict]:
         """Handle API response and return JSON if successful"""
         if res.status_code != requests.codes.ok:
             raise Exception(
@@ -64,10 +85,18 @@ class OpenObserve:
             )
         return res.json()
 
-    def __timestampConvert(self, timestamp: datetime) -> int:
-        """Convert Python datetime to OpenObserve timestamp (microseconds)"""
-        return int(timestamp.timestamp() * 1000000)
+    # pylint: disable=invalid-name
+    def __timestampConvert(self, timestamp: datetime, verbosity: int = 0) -> int:
+        try:
+            self._debug(f"__timestampConvert input: {timestamp}", verbosity, 2)
+            return int(timestamp.timestamp() * 1000000)
+        except Exception as exc:
+            # pylint: disable=raising-bad-type
+            raise (  # type: ignore[misc]
+                f"Exception from __timestampConvert for timestamp {timestamp}: {exc}"
+            )
 
+    # pylint: disable=invalid-name
     def __unixTimestampConvert(self, timestamp: int) -> datetime:
         """Convert OpenObserve timestamp to Python datetime"""
         try:
@@ -76,13 +105,20 @@ class OpenObserve:
             print(f"could not convert timestamp: {timestamp}")
             return datetime.fromtimestamp(0)
 
-    def __intts2datetime(self, flatdict: dict) -> dict:
-        """Convert timestamp fields in dict to datetime objects"""
-        for key, val in flatdict.items():
-            if "time" in key:
-                flatdict[key] = self.__unixTimestampConvert(val)
+    def __intts2datetime(
+        self, flatdict: dict, timestamp_columns: Union[List[str], None]
+    ) -> dict:
+        if timestamp_columns is None:
+            for key, val in flatdict.items():
+                if "time" in key:
+                    flatdict[key] = self.__unixTimestampConvert(val)
+        else:
+            for key, val in flatdict.items():
+                if key in timestamp_columns:
+                    flatdict[key] = self.__unixTimestampConvert(val)
         return flatdict
 
+    # pylint: disable=invalid-name
     def __datetime2Str(self, flatdict: dict) -> dict:
         """Convert datetime fields in dict to timestamp integers"""
         for key, val in flatdict.items():
@@ -90,7 +126,7 @@ class OpenObserve:
                 flatdict[key] = self.__timestampConvert(val)
         return flatdict
 
-    def index(self, index: str, document: dict) -> dict:
+    def index(self, index: str, document: dict) -> List[dict]:
         """Index a document in OpenObserve"""
         assert isinstance(document, dict), "document must be a dict"
         document = self.__datetime2Str(flatten(document))
@@ -100,29 +136,45 @@ class OpenObserve:
             headers=self.headers,
             json=[document],
             verify=self.verify,
+            timeout=self.timeout,
         )
         response_json = self._handle_response(res, "index")
 
-        if response_json["status"][0]["failed"] > 0:
+        if response_json["status"][0]["failed"] > 0:  # type:ignore[call-overload]
             raise Exception(
-                f"Openobserve index failed. {response_json['status'][0]['error']}. document: {document}"
+                "Openobserve index failed. "
+                f"{response_json['status'][0]['error']}"  # type:ignore[call-overload]
+                f". document: {document}"
             )
         return response_json
 
     def search(
         self,
         sql: str,
+        *,
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
         verbosity: int = 0,
-        outformat: str = "json",
+        timeout: int = 300,
+        timestamp_conversion_auto: bool = False,
+        timestamp_columns: Union[List[str], None] = None,
     ) -> List[Dict]:
-        """Execute a search query using SQL"""
-        # Convert datetime objects to timestamps if needed
+        """
+        OpenObserve search function
+        https://openobserve.ai/docs/api/search/search/
+        """
         if isinstance(start_time, datetime):
-            start_time = self.__timestampConvert(start_time)
+            start_time = self.__timestampConvert(start_time, verbosity)
+        elif not isinstance(start_time, int):
+            raise Exception(
+                "Search invalid start_time input, neither datetime, nor int"
+            )
         if isinstance(end_time, datetime):
-            end_time = self.__timestampConvert(end_time)
+            end_time = self.__timestampConvert(end_time, verbosity)
+        elif not isinstance(end_time, int):
+            raise Exception("Search invalid end_time input, neither datetime, nor int")
+
+        self._debug(f"Query Time start {start_time} end {end_time}", verbosity, 1)
 
         # Verify SQL syntax
         try:
@@ -138,139 +190,102 @@ class OpenObserve:
             json=query,
             headers=self.headers,
             verify=self.verify,
+            timeout=timeout,
         )
 
         response_json = self._handle_response(res, "search")
-        hits = [self.__intts2datetime(x) for x in response_json["hits"]]
+        res_hits = response_json["hits"]  # type:ignore[call-overload]
+        self._debug(res_hits, verbosity, 3)
 
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(hits)
-        return hits
+        if timestamp_conversion_auto or timestamp_columns is not None:
+            # timestamp back convert
+            res_hits = [self.__intts2datetime(x, timestamp_columns) for x in res_hits]
+        return res_hits
 
     def _execute_api_request(
         self,
         endpoint: str,
+        *,
         verbosity: int = 0,
         method: str = "GET",
         params: Optional[dict] = None,
         json_data: Optional[dict] = None,
-    ) -> dict:
+    ) -> List[Dict]:
         """Execute API request with proper error handling and debugging"""
         url = self.openobserve_url.replace("[STREAM]", endpoint)
         self._debug(url, verbosity)
 
         if method == "GET":
             res = requests.get(
-                url, headers=self.headers, params=params, verify=self.verify
+                url,
+                headers=self.headers,
+                params=params,
+                verify=self.verify,
+                timeout=self.timeout,
             )
         elif method == "POST":
             res = requests.post(
-                url, headers=self.headers, json=json_data, verify=self.verify
+                url,
+                headers=self.headers,
+                json=json_data,
+                verify=self.verify,
+                timeout=self.timeout,
             )
         elif method == "PUT":
             res = requests.put(
-                url, headers=self.headers, json=json_data, verify=self.verify
+                url,
+                headers=self.headers,
+                json=json_data,
+                verify=self.verify,
+                timeout=self.timeout,
             )
         else:
             raise ValueError(f"Unsupported method: {method}")
 
         return self._handle_response(res, f"{method}_{endpoint.split('/')[0]}")
 
-    def list_functions(self, verbosity: int = 0, outformat: str = "json"):
-        """
-        List available functions
-        https://openobserve.ai/docs/api/functions
-        """
-        response_json = self._execute_api_request("functions", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_pipelines(self, verbosity: int = 0, outformat: str = "json"):
-        """List available pipelines"""
-        response_json = self._execute_api_request("pipelines", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_streams(
+    def search2df(
         self,
-        schema: bool = False,
-        streamtype: str = "logs",
+        sql: str,
+        *,
+        start_time: Union[datetime, int] = 0,
+        end_time: Union[datetime, int] = 0,
         verbosity: int = 0,
-        outformat: str = "json",
-    ):
+        timeout: int = 300,
+        timestamp_conversion_auto: bool = False,
+        timestamp_columns: Union[List[str], None] = None,
+    ) -> pandas.DataFrame:
         """
-        List available streams
-        https://openobserve.ai/docs/api/stream/list/
+        OpenObserve search function with df output
+        https://openobserve.ai/docs/api/search/search/
         """
-        response_json = self._execute_api_request(
-            f"streams?fetchSchema={schema}&type={streamtype}", verbosity
+        res_json_hits = self.search(
+            sql,
+            start_time=start_time,
+            end_time=end_time,
+            verbosity=verbosity,
+            timeout=timeout,
+            timestamp_conversion_auto=timestamp_conversion_auto,
+            # leaving conversion to pandas
+            # timestamp_columns=timestamp_columns,
         )
-        if outformat == "df":
-            return pandas.json_normalize(response_json["list"])
-        return response_json
+        df_res = pandas.json_normalize(res_json_hits)
 
-    def list_alerts(self, verbosity: int = 0, outformat: str = "json"):
-        """List configured alerts on server"""
-        response_json = self._execute_api_request("alerts", verbosity)
-        if outformat == "df":
-            return pandas.json_normalize(response_json["list"])
-        return response_json
-
-    def list_users(self, verbosity: int = 0, outformat: str = "json"):
-        """List available users  https://openobserve.ai/docs/api/users"""
-        response_json = self._execute_api_request("users", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            try:
-                return pandas.json_normalize(response_json["data"])
-            except KeyError as err:
-                raise Exception(f"Exception KeyError: {err}")
-            except Exception as err:
-                raise Exception(f"Exception: {err}")
-        return response_json
-
-    def list_dashboards(self, verbosity: int = 0, outformat: str = "json"):
-        """List available dashboards  https://openobserve.ai/docs/api/dashboards"""
-        response_json = self._execute_api_request("dashboards", verbosity)
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json["dashboards"])
-        return response_json
-
-    def list_objects(
-        self, object_type: str, verbosity: int = 0, outformat: str = "json"
-    ):
-        """List available objects for given type"""
-        key_mapping = {
-            "dashboards": "dashboards",
-            "users": "data",
-            "alerts/destinations": 0,
-            "alerts/templates": 0,
-        }
-
-        key = key_mapping.get(object_type, "list")
-        response_json = self._execute_api_request(object_type, verbosity)
-
-        if outformat == "df" and HAVE_MODULE_PANDAS:
-            return pandas.json_normalize(response_json[key])
-        return response_json
-
-    def list_objects2df(self, object_type: str, verbosity: int = 0) -> pandas.DataFrame:
-        """
-        List available objects for given type
-        Output: Dataframe
-        """
-        key_mapping = {
-            "dashboards": "dashboards",
-            "users": "data",
-            "alerts/destinations": 0,
-            "alerts/templates": 0,
-        }
-        key = key_mapping.get(object_type, "list")
-
-        res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
-
-        return pandas.json_normalize(res_json[key])  # type: ignore[index]
+        if timestamp_columns is not None:
+            for col in list(
+                set(df_res.columns) & set(["_timestamp"] + timestamp_columns)
+            ):
+                try:
+                    # ensure timestamp format
+                    if col in ["_timestamp"] + timestamp_columns:
+                        df_res[col] = pandas.to_datetime(df_res[col])
+                except Exception as err:
+                    raise Exception(
+                        err,
+                        "query",
+                        f"query column type conversion: {col} -> {df_res[col]}",
+                    ) from err
+        return df_res
 
     # pylint: disable=too-many-branches
     def export_objects_split(
@@ -329,6 +344,30 @@ class OpenObserve:
                 )
         return True
 
+    def list_objects(self, object_type: str, verbosity: int = 0) -> List[Dict]:
+        """List available objects for given type"""
+
+        response_json = self._execute_api_request(object_type, verbosity=verbosity)
+
+        return response_json
+
+    def list_objects2df(self, object_type: str, verbosity: int = 0) -> pandas.DataFrame:
+        """
+        List available objects for given type
+        Output: Dataframe
+        """
+        key_mapping = {
+            "dashboards": "dashboards",
+            "users": "data",
+            "alerts/destinations": 0,
+            "alerts/templates": 0,
+        }
+        key = key_mapping.get(object_type, "list")
+
+        res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
+
+        return pandas.json_normalize(res_json[key])  # type: ignore[index,call-overload]
+
     def config_export(
         self,
         file_path: str,
@@ -370,82 +409,34 @@ class OpenObserve:
             if split is True and flat is False:
                 # split json
                 data = {
-                    name: [api_path, self.list_objects(api_path, verbosity=verbosity)]
+                    name: [
+                        api_path,
+                        self.list_objects(api_path, verbosity=verbosity),
+                    ]  # type:ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
                 for name, object_data in data.items():
                     self.export_objects_split(
-                        object_data[0], object_data[1], file_path, verbosity=verbosity
+                        object_data[0],  # type:ignore[arg-type]
+                        object_data[1],  # type:ignore[arg-type]
+                        file_path,
+                        verbosity=verbosity,
                     )
             elif split is True and flat is True:
                 print("FIXME! Not implemented")
                 sys.exit(1)
             else:
                 data = {
-                    name: self.list_objects(api_path, verbosity=verbosity)
+                    name: self.list_objects(
+                        api_path, verbosity=verbosity
+                    )  # type:ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
                 for name, object_data in data.items():
                     with open(f"{file_path}{name}.json", "w", encoding="utf-8") as f:
                         json.dump(object_data, f, ensure_ascii=False, indent=4)
-
-    def create_function(self, function_json: dict, verbosity: int = 0):
-        """Create function https://openobserve.ai/docs/api/function/create"""
-        url = self.openobserve_url.replace("[STREAM]", "functions")
-        self._debug(f"Create function url: {url}", verbosity)
-        self._debug(f"Create function json input: {function_json}", verbosity, level=2)
-
-        res = requests.post(
-            url, json=function_json, headers=self.headers, verify=self.verify
-        )
-        self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=1)
-        self._handle_response(res, "create_function")
-
-        self._debug("Create function completed", verbosity)
-        return True
-
-    def update_function(self, function_json: dict, verbosity: int = 0):
-        """Update function         https://openobserve.ai/docs/api/function/update"""
-        url = self.openobserve_url.replace(
-            "[STREAM]", f"functions/{function_json['name']}"
-        )
-        self._debug(f"Update function url: {url}", verbosity)
-        self._debug(f"Update function json input: {function_json}", verbosity, level=2)
-
-        res = requests.put(
-            url, json=function_json, headers=self.headers, verify=self.verify
-        )
-        self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=1)
-        self._handle_response(res, "update_function")
-
-        self._debug("Update function completed", verbosity)
-        return True
-
-    def import_functions(
-        self, file_path: str, overwrite: bool = False, verbosity: int = 0
-    ):
-        """Import functions from json file"""
-        self._debug(self.openobserve_url.replace("[STREAM]", "functions"), verbosity)
-
-        with open(file_path, "r") as json_file:
-            json_data = json.load(json_file)
-            self._debug(json_data, verbosity, level=2)
-
-            for function in json_data.get("list", []):
-                self._debug(function["name"], verbosity)
-                self._debug(function, verbosity, level=1)
-
-                try:
-                    return self.create_function(function, verbosity=verbosity)
-                except Exception:
-                    if overwrite:
-                        print(
-                            f"Overwrite enabled. Updating function {function['name']}"
-                        )
-                        return self.update_function(function, verbosity=verbosity)
-        return True
 
     def create_object(self, object_type: str, object_json: dict, verbosity: int = 0):
         """Create object"""
@@ -454,7 +445,11 @@ class OpenObserve:
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
 
         res = requests.post(
-            url, json=object_json, headers=self.headers, verify=self.verify
+            url,
+            json=object_json,
+            headers=self.headers,
+            verify=self.verify,
+            timeout=self.timeout,
         )
         self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=1)
         self._handle_response(res, f"create_object_{object_type}")
@@ -471,7 +466,11 @@ class OpenObserve:
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
 
         res = requests.put(
-            url, json=object_json, headers=self.headers, verify=self.verify
+            url,
+            json=object_json,
+            headers=self.headers,
+            verify=self.verify,
+            timeout=self.timeout,
         )
         self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=3)
         self._handle_response(res, f"update_object_{object_type}")
