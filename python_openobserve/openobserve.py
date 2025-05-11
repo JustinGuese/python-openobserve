@@ -478,6 +478,23 @@ class OpenObserve:
         self._debug("Update object completed", verbosity)
         return True
 
+    def delete_object(self, object_type: str, object_id: str, verbosity: int = 0):
+        """Delete object"""
+        url = self.openobserve_url.replace("[STREAM]", f"{object_type}/{object_id}")
+        self._debug(f"Delete object {object_type} url: {url}", verbosity, level=1)
+
+        res = requests.delete(
+            url,
+            headers=self.headers,
+            verify=self.verify,
+            timeout=self.timeout,
+        )
+        self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=3)
+        self._handle_response(res, f"delete_object_{object_type}")
+
+        self._debug("Delete object completed", verbosity)
+        return True
+
     def import_objects_split(
         self,
         object_type: str,
