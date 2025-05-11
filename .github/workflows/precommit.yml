@@ -16,7 +16,9 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # tag=v4.2.2
+
       - name: Install gitleaks
         run: |
           cd /tmp/
@@ -31,10 +33,10 @@ jobs:
       - name: Install mypy
         run: |
           set -x
-          pip install mypy types-requests types-jmespath pandas-stubs
+          pip install -r requirements-dev.txt
           mypy --install-types .
         continue-on-error: true
-      - uses: pre-commit/action@v3.0.1
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # tag=v3.0.1
         with:
           extra_args: --all-files --show-diff-on-failure
         continue-on-error: true
