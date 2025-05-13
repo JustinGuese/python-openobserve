@@ -137,6 +137,27 @@ def mock_post(*args, **kwargs):
             },
             200,
         )
+    elif "/api/default/functions" in url:
+        return MockResponse(
+            {
+                "text": {"code": 200, "message": "Function saved successfully"},
+            },
+            200,
+        )
+    elif "/api/default/pipelines" in url:
+        return MockResponse(
+            {
+                "text": {"code": 200, "message": "Pipeline created successfully"},
+            },
+            200,
+        )
+    elif "/api/default/users" in url:
+        return MockResponse(
+            {
+                "text": {"code": 200, "message": "User saved successfully"},
+            },
+            200,
+        )
 
     return MockResponse({"id": 1, "name": "John Doe"}, 200)
 
@@ -554,3 +575,170 @@ def test_search_time_conversion3(mock_post_kunai, capsys):
     # python Objects aka string
     assert df_res["body___monotonic_timestamp"].dtypes == "O"
     # assert df_res["body__runtime_scope"].dtypes == "O"
+
+
+@patch("requests.post", side_effect=mock_post)
+def test_import_user1(capsys):
+    """Ensure import user works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_pipeline = {
+        "email": "pytest@example.com",
+        "password": "pytest@example.com",
+        "first_name": "pytest",
+        "last_name": "",
+        "role": "admin",
+        "is_external": False,
+    }
+
+    oo_conn.import_objects_split(
+        "users",
+        json_pipeline,
+        "",
+        verbosity=5,
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "User saved successfully" in captured.out
+    assert "Create returns True" in captured.out
+
+
+@patch("requests.post", side_effect=mock_post)
+def test_import_function1(capsys):
+    """Ensure import function works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_function = {
+        "function": (
+            "if exists(.body) {\n   body_expanded, parse_err = parse_json(.body)\n"
+            "   if parse_err == null {\n       ., merge_err = merge(., body_expanded)\n"
+            "       ._messagetime = to_unix_timestamp(parse_timestamp!("
+            '.time, "%Y-%m-%dT%H:%M:%S+00:00"), unit: "microseconds")\n'
+            "       if merge_err == null {\n           del(.body)\n       }\n }\n}\n"
+            "if exists(.remote_addr) {\n"
+            "    geo_city, geo_err = get_enrichment_table_record("
+            '"maxmind_city", {"ip": .remote_addr })\n'
+            "    geo_asn, geo_err2 = get_enrichment_table_record("
+            '"maxmind_asn", {"ip": .remote_addr })\n'
+            "    if geo_err == null {\n        .geo_city = geo_city\n    }\n"
+            "    if geo_err2 == null {\n        .geo_asn = geo_asn\n }\n}\n."
+        ),
+        "name": "pytest_nginx_json_body",
+        "params": "row",
+        "numArgs": 1,
+        "transType": 0,
+    }
+
+    oo_conn.import_objects_split(
+        "functions",
+        json_function,
+        "",
+        verbosity=5,
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Create returns True" in captured.out
+
+
+@patch("requests.post", side_effect=mock_post)
+def test_import_pipeline1(capsys):
+    """
+    Ensure import pipeline works
+    Note: empty pipeline (nodes/edges) will return error (400)
+    """
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_pipeline = {
+        "pipeline_id": "7308207793515791234",
+        "version": 0,
+        "enabled": True,
+        "org": "default",
+        "name": "pytest_web",
+        "description": "",
+        "source": {
+            "source_type": "realtime",
+            "org_id": "default",
+            # can't have multiple pipelines on same stream
+            "stream_name": "pytestweb",
+            "stream_type": "logs",
+        },
+        "nodes": [
+            {
+                "id": "4efe0a03-0992-489c-b35b-15e3cf85a0fa",
+                "data": {
+                    "node_type": "stream",
+                    "org_id": "default",
+                    "stream_name": "web",
+                    "stream_type": "logs",
+                },
+                "position": {"x": 407.66666, "y": 66.333336},
+                "io_type": "input",
+            },
+            {
+                "id": "c7325c9c-8859-4f38-9111-4c29145bd3e5",
+                "data": {
+                    "node_type": "stream",
+                    "org_id": "default",
+                    "stream_name": "web",
+                    "stream_type": "logs",
+                },
+                "position": {"x": 406.66666, "y": 401.33334},
+                "io_type": "output",
+            },
+            {
+                "id": "f0114d07-8d5c-4a68-ae19-bf930659b969",
+                "data": {
+                    "node_type": "function",
+                    "name": "nginx_json_body",
+                    "after_flatten": False,
+                    "num_args": 0,
+                },
+                "position": {"x": 373.33334, "y": 298.33334},
+                "io_type": "default",
+            },
+            {
+                "id": "640e0ff9-871e-4dd7-8cb0-101549901f5f",
+                "data": {
+                    "node_type": "condition",
+                    "conditions": [
+                        {
+                            "column": "log_file_path",
+                            "operator": "=",
+                            "value": "/var/log/nginx/access_json.log",
+                            "ignore_case": False,
+                        }
+                    ],
+                },
+                "position": {"x": 303.0, "y": 168.66667},
+                "io_type": "default",
+            },
+        ],
+        "edges": [
+            {
+                "id": "e4efe0a03-0992-489c-b35b-15e3cf85a0fa-640e0ff9-871e-4dd7-8cb0-101549901f5f",
+                "source": "4efe0a03-0992-489c-b35b-15e3cf85a0fa",
+                "target": "640e0ff9-871e-4dd7-8cb0-101549901f5f",
+            },
+            {
+                "id": "e640e0ff9-871e-4dd7-8cb0-101549901f5f-f0114d07-8d5c-4a68-ae19-bf930659b969",
+                "source": "640e0ff9-871e-4dd7-8cb0-101549901f5f",
+                "target": "f0114d07-8d5c-4a68-ae19-bf930659b969",
+            },
+            {
+                "id": "ef0114d07-8d5c-4a68-ae19-bf930659b969-c7325c9c-8859-4f38-9111-4c29145bd3e5",
+                "source": "f0114d07-8d5c-4a68-ae19-bf930659b969",
+                "target": "c7325c9c-8859-4f38-9111-4c29145bd3e5",
+            },
+        ],
+    }
+    oo_conn.import_objects_split(
+        "pipelines",
+        json_pipeline,
+        "",
+        verbosity=5,
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Always returning 200 and create multiple identitical pipelines
+    assert "Return 200. Text: " in captured.out in captured.out
+    assert "Pipeline created successfully" in captured.out in captured.out
+    assert "Create returns " in captured.out
