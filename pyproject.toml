@@ -20,11 +20,23 @@ pydantic = "~=2.10"
 sqlglot = "~=26.4.0"
 
 [tool.optional-dependencies]
+ci = [
+    "jmespath==1.0.1",
+    "mypy==1.15.0",
+    "mypy-extensions==1.0.0",
+    "pandas==2.2.3",
+    "pandas-stubs==2.2.2.240807",
+    "pytest==8.3.5",
+    "pytest-cov==6.0.0",
+    "python-dotenv==1.0.1",
+    "types-jmespath==1.0.2.20240106",
+    "types-requests==2.32.0.20241016",
+]
 tests = ["pytest", "jmespath", "python-dotenv"]
 pandas = [
     "pandas>2.2"
 ]
-all = ['pandas', 'tests']
+all = ['pandas', 'tests', 'ci']
 
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
