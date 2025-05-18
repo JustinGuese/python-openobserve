@@ -27,9 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements-dev.txt
-          # FIXME! not installing tests dependencies
-          pip install '.[all]'
+          pip install -e '.[all]'
 
       - name: Test with pytest
         run: |
