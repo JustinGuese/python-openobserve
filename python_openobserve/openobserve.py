@@ -516,6 +516,8 @@ class OpenObserve:
         key2 = "name"
         if object_type == "dashboards":
             key2 = "dashboard_id"
+        if object_type == "users":
+            key2 = "email"
         file = Path(file_path)
         if (json_data is None or not json_data) and file.exists():
             with open(file_path, "r", encoding="utf-8") as json_file:
