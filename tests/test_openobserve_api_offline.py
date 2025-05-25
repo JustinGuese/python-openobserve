@@ -554,3 +554,137 @@ def test_search_time_conversion3(mock_post_kunai, capsys):
     # python Objects aka string
     assert df_res["body___monotonic_timestamp"].dtypes == "O"
     # assert df_res["body__runtime_scope"].dtypes == "O"
+
+
+def mock_delete404(*args, **kwargs):
+    """MockResponse function for openobserve calls of requests.delete"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.delete"""
+
+        def __init__(self, json_data, status_code, text, url):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+            self.url = url
+
+        def json(self):
+            return self.json_data
+
+    if "/api/users" in url:
+        return MockResponse(
+            {},
+            404,
+            '{"code":404,"message":"User for the organization not found"}',
+            "https://openobserve.example.com",
+        )
+
+    return MockResponse({}, 404, "", "https://openobserve.example.com")
+
+
+@patch("requests.delete", side_effect=mock_delete404)
+def test_delete_object_users1(mock_delete404):
+    """Ensure can delete users - invalid/non-existent"""
+    # pylint: disable=no-member
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    # Exception: Openobserve update_object_users returned 404.
+    # Text: {"code":404,"message":"User for the organization not found"}
+    with pytest.raises(Exception):
+        res = oo_conn.delete_object("users", "pytest-invalid@example.com")
+        assert res.status_code == 404
+        assert "User for the organization not found" in res.txt
+
+
+def mock_post_users(*args, **kwargs):
+    """MockResponse function for openobserve calls of requests.post"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.post"""
+
+        def __init__(self, json_data, status_code, text, url):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+            self.url = url
+
+        def json(self):
+            return self.json_data
+
+    if "/api/users" in url:
+        return MockResponse(
+            {},
+            200,
+            '{"code":200,"message":"User saved successfully"}',
+            "https://openobserve.example.com",
+        )
+
+    return MockResponse({}, 200, "", "https://openobserve.example.com")
+
+
+def mock_delete(*args, **kwargs):
+    """MockResponse function for openobserve calls of requests.delete"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.delete"""
+
+        def __init__(self, json_data, status_code, text, url):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+            self.url = url
+
+        def json(self):
+            return self.json_data
+
+    if "/api/users" in url:
+        return MockResponse(
+            {},
+            200,
+            '{"code":200,"message":"User removed from organization"}',
+            "https://openobserve.example.com",
+        )
+
+    return MockResponse({}, 200, "", "https://openobserve.example.com")
+
+
+@patch("requests.post", side_effect=mock_post_users)
+def test_create_delete_object_users(mock_post_users, capsys):
+    """Ensure can create and delete user"""
+    # pylint: disable=no-member
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    res = oo_conn.create_object(
+        "users",
+        {
+            "email": "pytest@example.com",
+            "password": "pytest@example.com",
+            "first_name": "pytest",
+            "last_name": "",
+            "role": "admin",
+            "is_external": False,
+        },
+        verbosity=3,
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert res
+    assert "Return 200. Text: " in captured.out
+    assert "Create object completed" in captured.out
+
+
+@patch("requests.delete", side_effect=mock_delete)
+def test_create_delete_object_users2(mock_delete, capsys):
+    """Ensure can create and delete user"""
+    # pylint: disable=no-member
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    res2 = oo_conn.delete_object("users", "pytest@example.com", verbosity=3)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert res2
+    assert "Return 200. Text: " in captured.out
+    assert "Delete object completed" in captured.out

@@ -381,3 +381,45 @@ def test_search_time_conversion3(capsys):
     # python Objects aka string
     assert df_res["body___monotonic_timestamp"].dtypes == "O"
     # assert df_res["body__runtime_scope"].dtypes == "O"
+
+
+def test_delete_object_users1():
+    """Ensure can delete users - invalid/non-existent"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    # Exception: Openobserve update_object_users returned 404.
+    # Text: {"code":404,"message":"User for the organization not found"}
+    with pytest.raises(Exception, match="User for the organization not found"):
+        oo_conn.delete_object("users", "pytest-invalid@example.com")
+
+
+def test_create_delete_object_users(capsys):
+    """Ensure can create and delete user"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.create_object(
+        "users",
+        {
+            "email": "pytest@example.com",
+            "password": "pytest@example.com",
+            "first_name": "pytest",
+            "last_name": "",
+            "role": "admin",
+            "is_external": False,
+        },
+        verbosity=3,
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "User saved successfully" in captured.out
+    assert "Create object users url:" in captured.out
+
+    oo_conn.delete_object("users", "pytest@example.com", verbosity=3)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "User removed from organization" in captured.out
+    assert "Delete object users url: " in captured.out
