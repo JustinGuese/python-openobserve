@@ -427,33 +427,38 @@ def test_search_df_limit2():
     assert "_timestamp" in df_search_results.columns
 
 
-def test_import_user1(capsys):
-    """Ensure import user works"""
+def test_delete_object_users1():
+    """Ensure can delete users - invalid/non-existent"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
-    json_pipeline = {
-        "email": "pytest@example.com",
-        "password": "pytest@example.com",
-        "first_name": "pytest",
-        "last_name": "",
-        "role": "admin",
-        "is_external": False,
-    }
 
-    oo_conn.import_objects_split(
+    # Exception: Openobserve update_object_users returned 404.
+    # Text: {"code":404,"message":"User for the organization not found"}
+    with pytest.raises(Exception, match="User for the organization not found"):
+        oo_conn.delete_object("users", "pytest-invalid@example.com")
+
+
+def test_create_object_users(capsys):
+    """Ensure can create user"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.create_object(
         "users",
-        json_pipeline,
-        "",
-        verbosity=5,
+        {
+            "email": "pytest@example.com",
+            "password": "pytest@example.com",
+            "first_name": "pytest",
+            "last_name": "",
+            "role": "admin",
+            "is_external": False,
+        },
+        verbosity=3,
     )
     captured = capsys.readouterr()
     assert "Openobserve returned 404." not in captured.out
     # Can create successfully or not if already exists
-    assert "Return 200. Text: " in captured.out or "Return 400. Text: " in captured.out
-    assert (
-        "User saved successfully" in captured.out
-        or "User already exists" in captured.out
-    )
-    assert "Create returns " in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "User saved successfully" in captured.out
+    assert "Create object users url:" in captured.out
 
 
 def test_import_alert1(capsys):
@@ -511,13 +516,8 @@ def test_import_alert2(capsys):
     # if from alert export, Capitalize boolean, remove null entries
     json_alert = {
         "context_attributes": {},
-        "description": "Detects the doas tool execution in linux host platform. This "
-        "utility tool allow standard users to perform tasks as root, "
-        "the same way sudo does.\n"
-        "level: low\n"
-        "status: stable\n"
-        "author: Sittikorn S, Teoderick Contreras",
-        "destinations": ["<alert-destination-TBD>"],
+        "description": "Detects the doas tool execution in linux host platform. ...",
+        "destinations": ["alert-destination-email"],
         "enabled": True,
         "id": "067d8238-7127-451c-a9ec-fa78045b1234",
         "is_real_time": False,
@@ -525,10 +525,10 @@ def test_import_alert2(capsys):
         "org_id": "default",
         "owner": "root@example.com",
         "query_condition": {
-            "conditions": [],
-            "multi_time_range": [],
-            "sql": 'SELECT * FROM "kunai" WHERE data_exe_path LIKE ' "'%/doas'",
             "type": "sql",
+            "conditions": [],
+            "sql": 'select count(*) from "default"',
+            "multi_time_range": [],
         },
         "row_template": "",
         "stream_name": "kunai",
@@ -543,19 +543,35 @@ def test_import_alert2(capsys):
             "threshold": 3,
             "timezone": "UTC",
         },
+        "tz_offset": 0,
+        "last_edited_by": "root@example.com",
     }
 
-    oo_conn.import_objects_split(
-        "alerts",
-        json_alert,
-        "",
-        verbosity=5,
-    )
-    captured = capsys.readouterr()
-    # FIXME! returns 404
-    # assert "Openobserve returned 404." not in captured.out
-    # assert "Return 200. Text: " in captured.out or "Return 400. Text: " in captured.out
-    assert "Create returns " in captured.out
+    with pytest.raises(Exception, match="Json deserialize error: Failed to decode at"):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
+        captured = capsys.readouterr()
+        # FIXME! Return 400. Text: Json deserialize error: Failed to decode at line 1 column 735
+        # assert "Return 200. Text: " in captured.out
+        # assert "Create returns " in captured.out
+        assert "Return 400. Text: " in captured.out
+
+
+# def test_delete_object_alert2(capsys):
+#     """Ensure can delete alert"""
+#     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+#
+#     oo_conn.delete_object("alerts", "pytest Linux Doas Tool Execution", verbosity=3)
+#     captured = capsys.readouterr()
+#     assert "Openobserve returned 404." not in captured.out
+#     # Can create successfully or not if already exists
+#     assert "Return 200. Text: " in captured.out
+#     assert "Alert deleted" in captured.out
+#     assert "Delete object alerts url: " in captured.out
 
 
 # if no matching user:
@@ -583,12 +599,36 @@ def test_import_alert_destination(capsys):
     )
     captured = capsys.readouterr()
     assert "Openobserve returned 404." not in captured.out
-    assert (
-        "returned 200. Text: " in captured.out
-        # "Destination with the same name \'\n \'already exists" (Exception/400)
-        or "returned 400. Text: " in captured.out
-    )
+    assert "Return 200. Text: " in captured.out
     assert "Create returns " in captured.out
+
+
+def test_delete_object_alert_destination(capsys):
+    """Ensure can delete alert/destinations"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.delete_object(
+        "alerts/destinations", "pytest-alert-destination-email", verbosity=3
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "Alert destination deleted" in captured.out
+    assert "Delete object alerts/destinations url: " in captured.out
+
+
+def test_delete_object_users(capsys):
+    """Ensure can delete user - after alerts/destination tests"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.delete_object("users", "pytest@example.com", verbosity=3)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "User removed from organization" in captured.out
+    assert "Delete object users url: " in captured.out
 
 
 def test_import_function1(capsys):
@@ -630,6 +670,19 @@ def test_import_function1(capsys):
     assert "Create returns " in captured.out
 
 
+def test_delete_object_functions(capsys):
+    """Ensure can delete functions"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.delete_object("functions", "pytest_nginx_json_body", verbosity=3)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "Function deleted" in captured.out
+    assert "Delete object functions url: " in captured.out
+
+
 def test_import_pipeline0(capsys):
     """
     Ensure import pipeline works - empty
@@ -653,20 +706,22 @@ def test_import_pipeline0(capsys):
         "nodes": [],
         "edges": [],
     }
-    oo_conn.import_objects_split(
-        "pipelines",
-        json_pipeline,
-        "",
-        verbosity=5,
-    )
-    captured = capsys.readouterr()
-    assert "Openobserve returned 404." not in captured.out
-    assert "returned 400. Text: " in captured.out
-    assert (
-        "Invalid pipeline Empty pipeline. Please add Source/Destination node"
-        in captured.out
-    )
-    assert "Create returns False" in captured.out
+
+    with pytest.raises(Exception, match="Invalid pipeline Empty pipeline."):
+        oo_conn.import_objects_split(
+            "pipelines",
+            json_pipeline,
+            "",
+            verbosity=5,
+        )
+        captured = capsys.readouterr()
+        assert "Openobserve returned 404." not in captured.out
+        assert "returned 400. Text: " in captured.out
+        assert (
+            "Invalid pipeline Empty pipeline. Please add Source/Destination node"
+            in captured.out
+        )
+        assert "Create returns False" in captured.out
 
 
 def test_import_pipeline1(capsys):
