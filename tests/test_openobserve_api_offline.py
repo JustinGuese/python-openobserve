@@ -652,7 +652,7 @@ def mock_delete(*args, **kwargs):
 
 
 @patch("requests.post", side_effect=mock_post_users)
-def test_create_delete_object_users(capsys, mock_post_users):
+def test_create_delete_object_users(mock_post_users, capsys):
     """Ensure can create and delete user"""
     # pylint: disable=no-member
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -671,12 +671,13 @@ def test_create_delete_object_users(capsys, mock_post_users):
     )
     captured = capsys.readouterr()
     assert "Openobserve returned 404." not in captured.out
-    assert res.status_code == 200
-    assert "User saved successfully" in res.txt
+    assert res
+    assert "Return 200. Text: " in captured.out
+    assert "Create object completed" in captured.out
 
 
 @patch("requests.delete", side_effect=mock_delete)
-def test_create_delete_object_users2(capsys, mock_delete):
+def test_create_delete_object_users2(mock_delete, capsys):
     """Ensure can create and delete user"""
     # pylint: disable=no-member
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -684,5 +685,6 @@ def test_create_delete_object_users2(capsys, mock_delete):
     res2 = oo_conn.delete_object("users", "pytest@example.com", verbosity=3)
     captured = capsys.readouterr()
     assert "Openobserve returned 404." not in captured.out
-    assert res2.status_code == 200
-    assert "User removed from organization" in res2.txt
+    assert res2
+    assert "Return 200. Text: " in captured.out
+    assert "Delete object completed" in captured.out
