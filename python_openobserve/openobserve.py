@@ -213,6 +213,8 @@ class OpenObserve:
     ) -> List[Dict]:
         """Execute API request with proper error handling and debugging"""
         url = self.openobserve_url.replace("[STREAM]", endpoint)
+        if endpoint in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(url, verbosity)
 
         if method == "GET":
@@ -441,6 +443,8 @@ class OpenObserve:
     def create_object(self, object_type: str, object_json: dict, verbosity: int = 0):
         """Create object"""
         url = self.openobserve_url.replace("[STREAM]", object_type)
+        if object_type in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(f"Create object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
 
@@ -462,6 +466,8 @@ class OpenObserve:
         url = self.openobserve_url.replace(
             "[STREAM]", f"{object_type}/{object_json['name']}"
         )
+        if object_type in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(f"Update object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
 
@@ -476,6 +482,23 @@ class OpenObserve:
         self._handle_response(res, f"update_object_{object_type}")
 
         self._debug("Update object completed", verbosity)
+        return True
+
+    def delete_object(self, object_type: str, object_id: str, verbosity: int = 0):
+        """Delete object"""
+        url = self.openobserve_url.replace("[STREAM]", f"{object_type}/{object_id}")
+        self._debug(f"Delete object {object_type} url: {url}", verbosity, level=1)
+
+        res = requests.delete(
+            url,
+            headers=self.headers,
+            verify=self.verify,
+            timeout=self.timeout,
+        )
+        self._debug(f"Return {res.status_code}. Text: {res.text}", verbosity, level=3)
+        self._handle_response(res, f"delete_object_{object_type}")
+
+        self._debug("Delete object completed", verbosity)
         return True
 
     def import_objects_split(
@@ -493,6 +516,8 @@ class OpenObserve:
         key2 = "name"
         if object_type == "dashboards":
             key2 = "dashboard_id"
+        if object_type == "users":
+            key2 = "email"
         file = Path(file_path)
         if (json_data is None or not json_data) and file.exists():
             with open(file_path, "r", encoding="utf-8") as json_file:
