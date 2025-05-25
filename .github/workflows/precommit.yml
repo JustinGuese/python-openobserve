@@ -34,6 +34,7 @@ jobs:
         run: |
           set -x
           pip install -e .[ci]
+          pip install -r requirements-dev.txt
           mypy --install-types .
         continue-on-error: true
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # tag=v3.0.1
