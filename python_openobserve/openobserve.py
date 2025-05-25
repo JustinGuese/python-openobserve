@@ -213,6 +213,8 @@ class OpenObserve:
     ) -> List[Dict]:
         """Execute API request with proper error handling and debugging"""
         url = self.openobserve_url.replace("[STREAM]", endpoint)
+        if endpoint in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(url, verbosity)
 
         if method == "GET":
@@ -441,6 +443,8 @@ class OpenObserve:
     def create_object(self, object_type: str, object_json: dict, verbosity: int = 0):
         """Create object"""
         url = self.openobserve_url.replace("[STREAM]", object_type)
+        if object_type in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(f"Create object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
 
@@ -462,6 +466,8 @@ class OpenObserve:
         url = self.openobserve_url.replace(
             "[STREAM]", f"{object_type}/{object_json['name']}"
         )
+        if object_type in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(f"Update object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
 
