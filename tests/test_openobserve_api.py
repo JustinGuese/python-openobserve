@@ -118,6 +118,20 @@ def test_list_object_users():
     assert user
 
 
+def test_list_object_alerts():
+    """Ensure can list alerts and have right fields (list_objects)"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    res = oo_conn.list_objects("alerts")
+    pprint(res)
+    owner = jmespath.search("list[?owner=='root@example.com']", res)
+    folder = jmespath.search("list[?folder_name=='default']", res)
+    # destinations = jmespath.search("list[?destinations]", res)
+    assert owner
+    assert folder
+    # FIXME! underlying API call issue.
+    # assert destinations != []
+
+
 def test_config_export(tmpdir):
     """Ensure can do config export to json"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -506,8 +520,9 @@ def test_import_alert1(capsys):
     )
     # pylint: disable=unused-variable
     captured = capsys.readouterr()
-    # FIXME! returns 404 https://github.com/openobserve/openobserve/issues/6656
-    # assert "Openobserve returned 404." not in captured.out
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Create returns " in captured.out
 
 
 def test_import_alert2(capsys):
