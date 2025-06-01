@@ -36,7 +36,10 @@ tests = ["pytest", "jmespath", "python-dotenv"]
 pandas = [
     "pandas>2.2"
 ]
-all = ['pandas', 'tests', 'ci']
+polar = [
+    "polars==1.30.0"
+]
+all = ['pandas', 'tests', 'ci', 'polars']
 
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
