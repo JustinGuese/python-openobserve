@@ -26,6 +26,10 @@ jobs:
           tar xzf gitleaks_*_linux_x64.tar.gz
           sudo install -m 755 gitleaks /usr/local/bin/
         continue-on-error: true
+      - name: Install cosign
+        uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb  # tag=v3.8.2
+        with:
+          cosign-release: "v2.5.0"
       - name: Install trufflehog
         run: |
           curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
