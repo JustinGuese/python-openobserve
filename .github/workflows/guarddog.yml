@@ -27,8 +27,10 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install GuardDog
-        run: pip install guarddog
+      - name: Install dependencies including guarddog
+        run: |
+          set -x
+          pip install -r requirements-dev.txt
 
       - name: Generate requirements.txt
         run: |

@@ -31,6 +31,7 @@ ci = [
     "python-dotenv==1.0.1",
     "types-jmespath==1.0.2.20240106",
     "types-requests==2.32.0.20241016",
+    "guarddog==2.6.0",
 ]
 tests = ["pytest", "jmespath", "python-dotenv"]
 pandas = [
