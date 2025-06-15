@@ -2,7 +2,7 @@
 
 import os
 
-# import json
+import json
 from datetime import datetime, timedelta
 from pprint import pprint
 import pytest  # type: ignore
@@ -187,6 +187,18 @@ def test_config_export_xlsx(tmpdir):
     assert os.path.exists(f"{tmpdir}/pipelines.xlsx")
     assert os.path.exists(f"{tmpdir}/streams.xlsx")
     assert os.path.exists(f"{tmpdir}/users.xlsx")
+
+
+def test_config_export_strip(tmpdir):
+    """Ensure can do config export to json"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    oo_conn.config_export(f"{tmpdir}/", verbosity=0, split=True, strip=True)
+    assert os.path.isdir(f"{tmpdir}/alerts")
+    assert os.path.exists(f"{tmpdir}/streams/default.json")
+    with open(f"{tmpdir}/streams/default.json", "r", encoding="utf-8") as json_file:
+        json_data = json.loads(json_file.read())
+        stats = jmespath.search("stats", json_data)
+        assert not stats
 
 
 def test_search1():

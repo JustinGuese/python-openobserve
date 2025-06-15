@@ -333,7 +333,7 @@ class OpenObserve:
                     ) from err
         return df_res
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-locals
     def export_objects_split(
         self,
         object_type: str,
@@ -342,6 +342,7 @@ class OpenObserve:
         *,
         verbosity: int = 0,
         flat: bool = False,
+        strip: bool = False,
     ):
         """
         Export OpenObserve json configuration to split json files
@@ -374,6 +375,22 @@ class OpenObserve:
             self._debug(
                 f"Export json {object_type} {json_object[key2]}...", verbosity, 0
             )
+            if strip:
+                keys_to_remove = [
+                    # alerts
+                    "last_triggered_at",
+                    "last_satisfied_at",
+                    "updated_at",
+                    "last_edited_by",
+                    # streams
+                    "stats",
+                ]
+                # data = json.loads(json_object)
+                data2 = {
+                    k: v for k, v in json_object.items() if k not in keys_to_remove
+                }
+                # json_object = json.dumps(data2)
+                json_object = data2
             self._debug(f"json {json_object}", verbosity, 2)
             try:
                 with open(
@@ -416,6 +433,7 @@ class OpenObserve:
         outformat: str = "json",
         split: bool = False,
         flat: bool = False,
+        strip: bool = False,
     ):
         """Export OpenObserve configuration to json/csv/xlsx"""
 
@@ -462,6 +480,7 @@ class OpenObserve:
                         object_data[1],  # type:ignore[arg-type]
                         file_path,
                         verbosity=verbosity,
+                        strip=strip,
                     )
             elif split is True and flat is True:
                 print("FIXME! Not implemented")
