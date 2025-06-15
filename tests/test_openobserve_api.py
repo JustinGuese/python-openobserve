@@ -10,7 +10,7 @@ import sqlglot  # type: ignore
 import jmespath
 import requests
 from dotenv import load_dotenv  # type: ignore
-from python_openobserve.openobserve import OpenObserve
+from python_openobserve.openobserve import OpenObserve, is_ksuid, is_name
 
 # os.environ["REQUESTS_CA_BUNDLE"] = (
 #     os.environ["HOME"] + "/tmp/ca-bundle.pem"
@@ -86,6 +86,24 @@ def test_connection_incorrect_params4():
         match="Max retries exceeded with url:",
     ):
         oo_conn.list_objects("streams")
+
+
+def test_is_ksuid():
+    """Test is_ksuid() function"""
+
+    res = is_ksuid("abc")
+    assert not res
+    res2 = is_ksuid("ksuid1234567890abcdefghijkl")
+    assert res2
+
+
+def test_is_name():
+    """Test is_name() function"""
+
+    res = is_name("Test Alert Name")
+    assert not res
+    res2 = is_name("Test_Alert_Name")
+    assert res2
 
 
 def test_list_object_streams():
@@ -534,9 +552,9 @@ def test_import_alert2(capsys):
         "description": "Detects the doas tool execution in linux host platform. ...",
         "destinations": ["alert-destination-email"],
         "enabled": True,
-        "id": "067d8238-7127-451c-a9ec-fa78045b1234",
+        "id": "123huhHK12KnKur8ih1QuiUmABC",
         "is_real_time": False,
-        "name": "pytest Linux Doas Tool Execution",
+        "name": "pytest_Linux_Doas_Tool_Execution",
         "org_id": "default",
         "owner": "root@example.com",
         "query_condition": {
@@ -562,18 +580,112 @@ def test_import_alert2(capsys):
         "last_edited_by": "root@example.com",
     }
 
+    oo_conn.import_objects_split(
+        "alerts",
+        json_alert,
+        "",
+        verbosity=5,
+    )
+    captured = capsys.readouterr()
+    assert "Return 200. Text: " in captured.out
+    assert "Create returns " in captured.out
+    assert "Return 400. Text: " not in captured.out
+
+
+def test_import_alert3(capsys):
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        # invalid ksuid: must be 27 alphanum char length
+        "id": "ksuid-1234567890abcdefghijklmno",
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
     with pytest.raises(Exception, match="Json deserialize error: Failed to decode at"):
         oo_conn.import_objects_split(
             "alerts",
             json_alert,
             "",
             verbosity=5,
+            force=True,
         )
         captured = capsys.readouterr()
-        # FIXME! Return 400. Text: Json deserialize error: Failed to decode at line 1 column 735
-        # assert "Return 200. Text: " in captured.out
-        # assert "Create returns " in captured.out
         assert "Return 400. Text: " in captured.out
+
+
+def test_import_alert4():
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        # invalid ksuid: must be 27 alphanum char length
+        "id": "ksuid-1234567890abcdefghijklmno",
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(Exception, match="is not a ksuid"):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
+
+
+def test_import_alert5(capsys):
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        "id": "ksuid1234567890abcdefghijkl",
+        # Invalid alert name
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(
+        Exception,
+        match="Alert name cannot contain ':', '#', '\\?', '&', '%', quotes and space characters",
+    ):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+            force=True,
+        )
+        captured = capsys.readouterr()
+        assert "Return 400. Text: " in captured.out
+
+
+def test_import_alert6():
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        "id": "ksuid1234567890abcdefghijkl",
+        # Invalid alert name
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(
+        Exception,
+        match="Invalid input: Test Alert is not a valid name",
+    ):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
 
 
 # def test_delete_object_alert2(capsys):
@@ -587,6 +699,36 @@ def test_import_alert2(capsys):
 #     assert "Return 200. Text: " in captured.out
 #     assert "Alert deleted" in captured.out
 #     assert "Delete object alerts url: " in captured.out
+
+
+def test_delete_object_alert2_by_name1(capsys):
+    """Ensure can delete alert by name"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.delete_object_by_name("alerts", "pytest_alert", verbosity=5)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "Alert deleted" in captured.out
+    assert "Delete object alerts url: " in captured.out
+    assert "Delete by name deleted 1 object(s)." in captured.out
+
+
+def test_delete_object_alert2_by_name2(capsys):
+    """Ensure can delete alert by name"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.delete_object_by_name(
+        "alerts", "pytest_Linux_Doas_Tool_Execution", verbosity=5
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "Alert deleted" in captured.out
+    assert "Delete object alerts url: " in captured.out
+    assert "Delete by name deleted 1 object(s)." in captured.out
 
 
 # if no matching user:

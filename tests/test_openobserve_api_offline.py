@@ -1,6 +1,6 @@
 """Pytest file for python-openobserve"""
 
-# pylint: disable=unused-argument,redefined-outer-name,missing-function-docstring,too-few-public-methods,no-else-return,duplicate-code
+# pylint: disable=unused-argument,redefined-outer-name,missing-function-docstring,too-few-public-methods,no-else-return,duplicate-code,too-many-lines
 from datetime import datetime, timedelta
 from pprint import pprint
 from unittest.mock import patch
@@ -778,6 +778,51 @@ def test_import_alert1(mock_post_alert1, capsys):
     assert "Openobserve returned 404." not in captured.out
     assert "Return 200. Text: " in captured.out
     assert "Create returns " in captured.out
+
+
+def test_import_alert4():
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        # invalid ksuid: must be 27 alphanum char length
+        "id": "ksuid-1234567890abcdefghijklmno",
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(Exception, match="is not a ksuid"):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
+
+
+def test_import_alert6():
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        "id": "ksuid1234567890abcdefghijkl",
+        # Invalid alert name
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(
+        Exception,
+        match="Invalid input: Test Alert is not a valid name",
+    ):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
 
 
 @patch("requests.post", side_effect=mock_post)
