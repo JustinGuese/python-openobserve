@@ -1,6 +1,6 @@
 """Pytest file for python-openobserve"""
 
-# pylint: disable=unused-argument,redefined-outer-name,missing-function-docstring,too-few-public-methods,no-else-return,duplicate-code
+# pylint: disable=unused-argument,redefined-outer-name,missing-function-docstring,too-few-public-methods,no-else-return,duplicate-code,too-many-lines
 from datetime import datetime, timedelta
 from pprint import pprint
 from unittest.mock import patch
@@ -700,6 +700,129 @@ def test_create_object_users(mock_post_users, capsys):
     assert res
     assert "Return 200. Text: " in captured.out
     assert "Create object completed" in captured.out
+
+
+def mock_post_alert1(*args, **kwargs):
+    """MockResponse function for openobserve calls of requests.post - post alert"""
+    url = args[0]
+
+    class MockResponse:
+        """MockResponse class for openobserve calls of requests.post"""
+
+        def __init__(self, json_data, status_code, text, url):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+            self.url = url
+
+        def json(self):
+            return self.json_data
+
+    if "/api/users" in url:
+        return MockResponse(
+            {},
+            200,
+            '{"code":200,"message":"Alert saved"}',
+            "https://openobserve.example.com",
+        )
+
+    return MockResponse({}, 200, "", "https://openobserve.example.com")
+
+
+@patch("requests.post", side_effect=mock_post_alert1)
+def test_import_alert1(mock_post_alert1, capsys):
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    # if from alert export, Capitalize boolean, remove null entries
+    json_alert = {
+        "id": "2u5huhHK59KnKur8ih1QuiUmABC",
+        "name": "pytest_alert",
+        "org_id": "default",
+        "stream_type": "logs",
+        "stream_name": "default",
+        "is_real_time": False,
+        "query_condition": {
+            "type": "sql",
+            "conditions": [],
+            "sql": 'select count(*) from "default"',
+            "multi_time_range": [],
+        },
+        "trigger_condition": {
+            "period": 60,
+            "operator": "<=",
+            "threshold": 1,
+            "frequency": 60,
+            "cron": "",
+            "frequency_type": "minutes",
+            "silence": 60,
+            "timezone": "UTC",
+        },
+        "destinations": ["alert-destination-email"],
+        "context_attributes": {},
+        "row_template": "",
+        "description": "Description test alert",
+        "enabled": False,
+        "tz_offset": 0,
+        "owner": "root@example.com",
+        "last_edited_by": "root@example.com",
+    }
+
+    oo_conn.import_objects_split(
+        "alerts",
+        json_alert,
+        "",
+        verbosity=5,
+    )
+    # pylint: disable=unused-variable
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Create returns " in captured.out
+
+
+def test_import_alert4():
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        # invalid ksuid: must be 27 alphanum char length
+        "id": "ksuid-1234567890abcdefghijklmno",
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(Exception, match="is not a ksuid"):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
+
+
+def test_import_alert6():
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        "id": "ksuid1234567890abcdefghijkl",
+        # Invalid alert name
+        "name": "Test Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    with pytest.raises(
+        Exception,
+        match="Invalid input: Test Alert is not a valid name",
+    ):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
 
 
 @patch("requests.post", side_effect=mock_post)
