@@ -1,5 +1,10 @@
 # python-openobserve
 
+[![Actions Status - Main](https://github.com/JustinGuese/python-openobserve/workflows/AnsibleCI/badge.svg)](https://github.com/JustinGuese/python-openobserve/actions?query=branch%3Amain)
+[![PyPI Downloads](https://static.pepy.tech/badge/python-openobserve)](https://pepy.tech/projects/python-openobserve)
+[![Documentation build status](https://img.shields.io/readthedocs/python-openobserve?logo=read-the-docs)](https://python-openobserve.readthedocs.org/en/latest/)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/JustinGuese/python-openobserve/badge)](https://scorecard.dev/viewer/?uri=github.com/JustinGuese/python-openobserve)
+
 A python connector to interact with OpenObserve (https://github.com/openobserve/openobserve) be it sending data, searching, or exporting/importing settings.
 
 The idea is to have a similar python connector to the "Elasticsearch" package, which allows a 1:1 replacement of the "Elasticsearch" package with the "OpenObserve" package.
