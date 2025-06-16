@@ -40,7 +40,10 @@ pandas = [
 polar = [
     "polars==1.30.0"
 ]
-all = ['pandas', 'tests', 'ci', 'polars']
+fireducks = [
+    "fireducks==1.2.8"
+]
+all = ['pandas', 'tests', 'ci', 'polars', 'fireducks']
 
 [tool.poetry.scripts]
 python_openobserve = 'python_openobserve:openobserve'
