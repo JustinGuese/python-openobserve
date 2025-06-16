@@ -1,0 +1,13 @@
+---
+site_name: python_openobserve Docs
+theme:
+  name: "material"
+nav:
+  - index.md
+  - usage.md
+  - code.md
+  - tests.md
+  - resources.md
+plugins:
+  - search
+  - mkdocstrings
