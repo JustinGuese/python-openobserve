@@ -1,4 +1,5 @@
 # python-openobserve
+
 A python connector to interact with OpenObserve (https://github.com/openobserve/openobserve) be it sending data, searching, or exporting/importing settings.
 
 The idea is to have a similar python connector to the "Elasticsearch" package, which allows a 1:1 replacement of the "Elasticsearch" package with the "OpenObserve" package.
