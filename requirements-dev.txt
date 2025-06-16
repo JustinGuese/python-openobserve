@@ -1,9 +1,11 @@
 fireducks==1.2.8
+guarddog==2.6.0
 jmespath==1.0.1
 mypy==1.15.0
 mypy-extensions==1.0.0
 pandas==2.2.3
 pandas-stubs==2.2.2.240807
+polars==1.30.0
 pytest==8.3.5
 pytest-cov==6.0.0
 python-dotenv==1.0.1

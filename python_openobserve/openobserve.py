@@ -7,6 +7,7 @@ import json
 # import glob
 import os
 import sys
+import re
 from datetime import datetime
 from collections.abc import MutableMapping
 from typing import List, Dict, Union, Optional, Any, cast
@@ -26,12 +27,49 @@ except ImportError:
     HAVE_MODULE_PANDAS = False
 
 try:
+    import polars
+
+    HAVE_MODULE_POLARS = True
+except ImportError:
+    print("Can't import polars. some functions may be unavailable.")
+    HAVE_MODULE_POLARS = False
+
+try:
     import fireducks  # type: ignore
 
     HAVE_MODULE_FIREDUCKS = True
 except ImportError:
     print("Can't import fireducks. Some functions may be unavailable.")
     HAVE_MODULE_FIREDUCKS = False
+
+key_mapping = {
+    "dashboards": "dashboards",
+    "users": "data",
+    "alerts/destinations": 0,
+    "alerts/templates": 0,
+}
+# for deleting. different at create time...
+id_mapping = {
+    "alerts": "alert_id",
+    "alerts/destinations": "destination_name",
+    "alerts/templates": "template_name",
+    "dashboards": "dashboardId",
+    "functions": "name",
+    "pipelines": "pipeline_id",
+    "streams": "stream_name",
+    "users": "email_id",
+}
+name_mapping = {
+    "alerts": "name",
+    "alerts/destinations": "name",
+    "alerts/templates": "template_name",
+    "dashboards": "title",
+    "functions": "name",
+    # special handling directly in import_objects_split()
+    "pipelines": "source.stream_name",
+    "streams": "name",
+    "users": "email",
+}
 
 
 def flatten(dictionary, parent_key="", separator="."):
@@ -44,6 +82,20 @@ def flatten(dictionary, parent_key="", separator="."):
         else:
             items.append((new_key, value))
     return dict(items)
+
+
+def is_ksuid(input_string: str) -> bool:
+    """Is input a ksuid?"""
+    if re.match(r"^[a-zA-Z0-9]{27}$", input_string):
+        return True
+    return False
+
+
+def is_name(input_string: str) -> bool:
+    """Is input a valid name aka alert_name?"""
+    if re.match(r"^[^:#\?&%\"'\s]+$", input_string):
+        return True
+    return False
 
 
 class OpenObserve:
@@ -297,6 +349,48 @@ class OpenObserve:
                     ) from err
         return df_res
 
+    def search2df_polars(
+        self,
+        sql: str,
+        *,
+        start_time: Union[datetime, int] = 0,
+        end_time: Union[datetime, int] = 0,
+        verbosity: int = 0,
+        timeout: int = 300,
+        timestamp_conversion_auto: bool = False,
+        timestamp_columns: Union[List[str], None] = None,
+    ) -> polars.DataFrame:
+        """
+        OpenObserve search function with polars df output
+        """
+        res_json_hits = self.search(
+            sql,
+            start_time=start_time,
+            end_time=end_time,
+            verbosity=verbosity,
+            timeout=timeout,
+            timestamp_conversion_auto=timestamp_conversion_auto,
+            # leaving conversion to pandas
+            # timestamp_columns=timestamp_columns,
+        )
+        df_res = polars.json_normalize(res_json_hits)
+
+        if timestamp_columns is not None:
+            for col in list(
+                set(df_res.columns) & set(["_timestamp"] + timestamp_columns)
+            ):
+                try:
+                    # ensure timestamp format
+                    if col in ["_timestamp"] + timestamp_columns:
+                        df_res[col] = polars.to_datetime(df_res[col])
+                except Exception as err:
+                    raise Exception(
+                        err,
+                        "query",
+                        f"query column type conversion: {col} -> {df_res[col]}",
+                    ) from err
+        return df_res
+
     def search2df_fireducks(
         self,
         sql: str,
@@ -308,10 +402,8 @@ class OpenObserve:
         timestamp_conversion_auto: bool = False,
         timestamp_columns: Union[List[str], None] = None,
     ) -> fireducks.core.pandas.DataFrame:
-        # ) -> pandas.DataFrame:
         """
         OpenObserve search function with fireducks df output
-        https://openobserve.ai/docs/api/search/search/
         """
         res_json_hits = self.search(
             sql,
@@ -341,7 +433,7 @@ class OpenObserve:
                     ) from err
         return df_res
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-locals
     def export_objects_split(
         self,
         object_type: str,
@@ -350,6 +442,7 @@ class OpenObserve:
         *,
         verbosity: int = 0,
         flat: bool = False,
+        strip: bool = False,
     ):
         """
         Export OpenObserve json configuration to split json files
@@ -382,6 +475,22 @@ class OpenObserve:
             self._debug(
                 f"Export json {object_type} {json_object[key2]}...", verbosity, 0
             )
+            if strip:
+                keys_to_remove = [
+                    # alerts
+                    "last_triggered_at",
+                    "last_satisfied_at",
+                    "updated_at",
+                    "last_edited_by",
+                    # streams
+                    "stats",
+                ]
+                # data = json.loads(json_object)
+                data2 = {
+                    k: v for k, v in json_object.items() if k not in keys_to_remove
+                }
+                # json_object = json.dumps(data2)
+                json_object = data2
             self._debug(f"json {json_object}", verbosity, 2)
             try:
                 with open(
@@ -410,12 +519,6 @@ class OpenObserve:
         List available objects for given type
         Output: Dataframe
         """
-        key_mapping = {
-            "dashboards": "dashboards",
-            "users": "data",
-            "alerts/destinations": 0,
-            "alerts/templates": 0,
-        }
         key = key_mapping.get(object_type, "list")
 
         res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
@@ -430,6 +533,7 @@ class OpenObserve:
         outformat: str = "json",
         split: bool = False,
         flat: bool = False,
+        strip: bool = False,
     ):
         """Export OpenObserve configuration to json/csv/xlsx"""
 
@@ -476,6 +580,7 @@ class OpenObserve:
                         object_data[1],  # type:ignore[arg-type]
                         file_path,
                         verbosity=verbosity,
+                        strip=strip,
                     )
             elif split is True and flat is True:
                 print("FIXME! Not implemented")
@@ -539,6 +644,8 @@ class OpenObserve:
     def delete_object(self, object_type: str, object_id: str, verbosity: int = 0):
         """Delete object"""
         url = self.openobserve_url.replace("[STREAM]", f"{object_type}/{object_id}")
+        if object_type in ("alerts", "folders"):
+            url = url.replace("/api", "/api/v2")
         self._debug(f"Delete object {object_type} url: {url}", verbosity, level=1)
 
         res = requests.delete(
@@ -553,6 +660,24 @@ class OpenObserve:
         self._debug("Delete object completed", verbosity)
         return True
 
+    def delete_object_by_name(
+        self, object_type: str, object_name: str, verbosity: int = 0
+    ):
+        """Delete object by name"""
+        key = key_mapping.get(object_type, "list")
+        key_id = id_mapping.get(object_type, "id")
+        key_name = name_mapping.get(object_type, "name")
+        count_delete = 0
+        current = self.list_objects(object_type, verbosity)
+        self._debug(f"Delete by name objects list: {current}", verbosity, 3)
+        for obj in current[key]:  # type:ignore[call-overload]
+            if "name" in obj and object_name == obj[key_name]:
+                self._debug(f"Delete by name matching object: {obj}", verbosity)
+                self.delete_object(object_type, obj[key_id], verbosity)
+                count_delete += 1
+        self._debug(f"Delete by name deleted {count_delete} object(s).", verbosity, 1)
+        return True
+
     def import_objects_split(
         self,
         object_type: str,
@@ -561,15 +686,14 @@ class OpenObserve:
         *,
         overwrite: bool = False,
         verbosity: int = 0,
+        force: bool = False,
     ) -> bool:
         """
         Import OpenObserve configuration from split json files
+
+        force: skip controls like ksuid
         """
-        key2 = "name"
-        if object_type == "dashboards":
-            key2 = "dashboard_id"
-        if object_type == "users":
-            key2 = "email"
+        key2 = name_mapping.get(object_type, "name")
         file = Path(file_path)
         if (json_data is None or not json_data) and file.exists():
             with open(file_path, "r", encoding="utf-8") as json_file:
@@ -587,9 +711,30 @@ class OpenObserve:
             )
             return False
         self._debug(f"json_data: {json_data}", verbosity, level=3)
-        self._debug(
-            f"Try to create {object_type} {json_data[key2]}...", verbosity, level=0
-        )
+        if (
+            not force
+            and object_type in ("alerts")
+            and "id" in json_data
+            and not is_ksuid(json_data["id"])
+        ):
+            raise Exception(f"Invalid input: {json_data['id']} is not a ksuid")
+        if (
+            not force
+            and object_type in ("alerts")
+            and key2 in json_data
+            and not is_name(json_data[key2])
+        ):
+            raise Exception(f"Invalid input: {json_data[key2]} is not a valid name")
+        if object_type == "pipelines":
+            self._debug(
+                f"Try to create {object_type} {json_data['source']['stream_name']}...",
+                verbosity,
+                level=0,
+            )
+        else:
+            self._debug(
+                f"Try to create {object_type} {json_data[key2]}...", verbosity, level=0
+            )
         try:
             res = self.create_object(object_type, json_data, verbosity=verbosity)
             self._debug(f"Create returns {res}.", verbosity, level=0)
@@ -599,7 +744,7 @@ class OpenObserve:
 
             if overwrite:
                 self._debug(
-                    f"Overwrite enabled. Updating object {json_data[key2]}",
+                    "Overwrite enabled. Updating object",
                     verbosity,
                     level=0,
                 )
