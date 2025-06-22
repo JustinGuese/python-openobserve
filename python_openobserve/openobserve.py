@@ -1,6 +1,6 @@
 """OpenObserve API module"""
 
-# pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods
+# pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods,too-many-lines
 import base64
 import json
 
@@ -33,6 +33,14 @@ try:
 except ImportError:
     print("Can't import polars. some functions may be unavailable.")
     HAVE_MODULE_POLARS = False
+
+try:
+    import fireducks  # type: ignore
+
+    HAVE_MODULE_FIREDUCKS = True
+except ImportError:
+    print("Can't import fireducks. Some functions may be unavailable.")
+    HAVE_MODULE_FIREDUCKS = False
 
 key_mapping = {
     "dashboards": "dashboards",
@@ -421,6 +429,57 @@ class OpenObserve:
                     # ensure timestamp format
                     if col in ["_timestamp"] + timestamp_columns:
                         df_res[col] = polars.to_datetime(df_res[col])
+                except Exception as err:
+                    raise Exception(
+                        err,
+                        "query",
+                        f"query column type conversion: {col} -> {df_res[col]}",
+                    ) from err
+        return df_res
+
+    def search2df_fireducks(
+        self,
+        sql: str,
+        *,
+        start_time: Union[datetime, int] = 0,
+        end_time: Union[datetime, int] = 0,
+        verbosity: int = 0,
+        timeout: int = 300,
+        timestamp_conversion_auto: bool = False,
+        timestamp_columns: Union[List[str], None] = None,
+    ) -> fireducks.core.pandas.DataFrame:
+        """
+        OpenObserve search function with fireducks df output
+
+        Args:
+          sql: input sql query
+          start_time: start of search interval, either datetime, either int/epoch
+          end_time: end of search interval, either datetime, either int/epoch
+          verbosity: how verbose to run from 0/less to 5/more
+          timeout: http timeout
+          timestamp_conversion_auto: try to convert automatically column containing time as name
+          timestamp_columns: convert given columns to timestamp
+        """
+        res_json_hits = self.search(
+            sql,
+            start_time=start_time,
+            end_time=end_time,
+            verbosity=verbosity,
+            timeout=timeout,
+            timestamp_conversion_auto=timestamp_conversion_auto,
+            # leaving conversion to pandas
+            # timestamp_columns=timestamp_columns,
+        )
+        df_res = fireducks.core.pandas.json_normalize(res_json_hits)
+
+        if timestamp_columns is not None:
+            for col in list(
+                set(df_res.columns) & set(["_timestamp"] + timestamp_columns)
+            ):
+                try:
+                    # ensure timestamp format
+                    if col in ["_timestamp"] + timestamp_columns:
+                        df_res[col] = fireducks.pandas.to_datetime(df_res[col])
                 except Exception as err:
                     raise Exception(
                         err,
