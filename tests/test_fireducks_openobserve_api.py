@@ -1,4 +1,9 @@
-"""Pytest file for python-openobserve with fireducks"""
+"""
+Pytest file for python-openobserve with fireducks
+
+SPDX-FileCopyrightText: 2025 The python_openobserve authors
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
 
 # pylint: disable=duplicate-code
 import os

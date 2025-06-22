@@ -1,4 +1,9 @@
-"""Pytest file for python-openobserve"""
+"""
+Pytest file for python-openobserve
+
+SPDX-FileCopyrightText: 2025 The python_openobserve authors
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
 
 import os
 
