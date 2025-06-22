@@ -11,11 +11,9 @@ and is provided under the Creative Commons Zero public domain dedication.
 from hypothesis import given, strategies as st
 import python_openobserve.openobserve
 
-# TODO: replace st.nothing() with appropriate strategies
-
 
 @given(
-    user=st.nothing(),
+    user=st.text(),
     password=st.text(),
     organisation=st.just("default"),
     host=st.just("http://localhost:5080"),
@@ -34,7 +32,26 @@ def test_fuzz_OpenObserve(user, password, organisation, host, verify, timeout) -
     )
 
 
-@given(dictionary=st.nothing(), parent_key=st.just(""), separator=st.just("."))
+@given(
+    sql=st.text(),
+    timeout=st.just(10),
+)
+def test_fuzz_search(sql, timeout) -> None:
+    o2 = python_openobserve.openobserve.OpenObserve(
+        user="root@example.com",
+        password="Complexpass#123",  # nosec B106
+    )
+    o2.search(
+        sql=sql,
+        timeout=timeout,
+    )
+
+
+@given(
+    dictionary=st.dictionaries(st.text(), st.integers() | st.text()),
+    parent_key=st.just(""),
+    separator=st.just("."),
+)
 def test_fuzz_flatten(dictionary, parent_key, separator) -> None:
     python_openobserve.openobserve.flatten(
         dictionary=dictionary, parent_key=parent_key, separator=separator
