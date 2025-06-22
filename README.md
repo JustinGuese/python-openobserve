@@ -17,7 +17,7 @@ OpenObserve is way more lightweight than Elasticsearch, and it is open source, l
 
 ## usage
 
-see [example.ipynb](example.ipynb) for a full example
+see [example.ipynb](docs/example.ipynb) for a full example
 
 ```python
 from python_openobserve.openobserve import OpenObserve
