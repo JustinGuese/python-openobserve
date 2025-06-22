@@ -700,6 +700,57 @@ def test_import_alert6():
         )
 
 
+def test_import_alert7(capsys):
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        # "id": "ksuid1234567890abcdefghijkl",
+        "name": "pytest_Test_Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+    }
+
+    # Abnormal error from upstream as field is present
+    with pytest.raises(
+        Exception,
+        match="Alert name is required",
+    ):
+        oo_conn.import_objects_split(
+            "alerts",
+            json_alert,
+            "",
+            verbosity=5,
+        )
+        captured = capsys.readouterr()
+        assert "Return 400. Text: " in captured.out
+
+
+def test_import_alert8(capsys):
+    """Ensure import alert works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    json_alert = {
+        # "id": "ksuid1234567890abcdefghijkl",  # not required
+        "name": "pytest_Test_Alert",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+        "stream_name": "default",  # required
+        "enabled": False,
+    }
+
+    oo_conn.import_objects_split(
+        "alerts",
+        json_alert,
+        "",
+        verbosity=5,
+    )
+    captured = capsys.readouterr()
+    assert "Return 200. Text: " in captured.out
+    assert "Create returns " in captured.out
+    assert "Return 400. Text: " not in captured.out
+
+
 # def test_delete_object_alert2(capsys):
 #     """Ensure can delete alert"""
 #     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
