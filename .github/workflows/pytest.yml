@@ -19,7 +19,7 @@ jobs:
 
     services:
       openobserve:
-        image: public.ecr.aws/zinclabs/openobserve:v0.14.7
+        image: public.ecr.aws/zinclabs/openobserve:latest
         ports:
           - 5080:5080
         env:
