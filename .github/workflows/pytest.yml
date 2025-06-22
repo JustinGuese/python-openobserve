@@ -64,7 +64,7 @@ jobs:
           cat > .env <<EOF
           OPENOBSERVE_URL = "http://localhost:5080"
           OPENOBSERVE_USER = "root@example.com"
-          OPENOBSERVE_PASS = "Complexpass#132"
+          OPENOBSERVE_PASS = "root@example.com"
           EOF
           cat .env
 
