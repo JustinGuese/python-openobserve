@@ -19,6 +19,11 @@ jobs:
         # - undefined
         # - memory
     steps:
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # tag=v5.6.0
+      with:
+        python-version: '3.10'
+
     - name: Build Fuzzers (${{ matrix.sanitizer }})
       id: build
       uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # tag=v1
