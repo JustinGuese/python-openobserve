@@ -4,12 +4,7 @@
 import os
 
 # import json
-from datetime import datetime, timedelta
-from pprint import pprint
 import pytest  # type: ignore
-import sqlglot  # type: ignore
-import jmespath
-import requests
 from dotenv import load_dotenv  # type: ignore
 from python_openobserve.openobserve import OpenObserve
 
