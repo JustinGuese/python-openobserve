@@ -16,6 +16,21 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    services:
+      openobserve:
+        image: public.ecr.aws/zinclabs/openobserve:latest
+        ports:
+          - 5080:5080
+        env:
+          ZO_ROOT_USER_EMAIL: root@example.com
+          ZO_ROOT_USER_PASSWORD: Complexpass#123
+        options: >-
+          --health-cmd="curl --fail http://localhost:5080/health || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # tag=v4.2.2
@@ -30,6 +45,16 @@ jobs:
           set -x
           pip install -e '.[all]'
           pip install -r requirements-dev.txt
+
+      - name: Set .env for online tests
+        run: |
+          set -x
+          cat > .env <<EOF
+          OPENOBSERVE_URL = "http://localhost:5080"
+          OPENOBSERVE_USER = "root@example.com"
+          OPENOBSERVE_PASS = "Complexpass#132"
+          EOF
+          cat .env
 
       - name: Test with pytest
         run: |
