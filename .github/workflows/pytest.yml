@@ -21,7 +21,7 @@ jobs:
       ANSIBLE_CALLBACKS_ENABLED: profile_tasks
       ANSIBLE_EXTRA_VARS: ""
       ANSIBLE_ROLE: juju4.openobserve
-      ANSIBLE_SUITE: default
+      ANSIBLE_SUITE: default-full
 
     steps:
       - name: Checkout code
