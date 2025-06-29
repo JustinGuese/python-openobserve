@@ -347,6 +347,120 @@ def test_delete_object_alert2_by_name2(capsys):
     assert "Delete by name deleted 1 object(s)." in captured.out
 
 
+def test_delete_object_alert2_by_name3(capsys):
+    """Ensure can delete alert by name"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.delete_object_by_name("alerts", "pytest_Test_Alert", verbosity=5)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "Alert deleted" in captured.out
+    assert "Delete object alerts url: " in captured.out
+    assert "Delete by name deleted 1 object(s)." in captured.out
+
+
+def test_create_update_alert(capsys):
+    """Ensure create_update_alert alert works
+    Add twice and ensure only one alert.
+    """
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+    # if from alert export, Capitalize boolean, remove null entries
+    json_alert = {
+        "id": "2u5huhHK59KnKur8ih1QuiUmABC",
+        "name": "pytest_create_update_alert",
+        "org_id": "default",
+        "stream_type": "logs",
+        "stream_name": "default",
+        "is_real_time": False,
+        "query_condition": {
+            "type": "sql",
+            "conditions": [],
+            "sql": 'select count(*) from "default"',
+            "multi_time_range": [],
+        },
+        "trigger_condition": {
+            "period": 60,
+            "operator": "<=",
+            "threshold": 1,
+            "frequency": 60,
+            "cron": "",
+            "frequency_type": "minutes",
+            "silence": 60,
+            "timezone": "UTC",
+        },
+        "destinations": ["alert-destination-email"],
+        "context_attributes": {},
+        "row_template": "",
+        "description": "Description test alert",
+        "enabled": False,
+        "tz_offset": 0,
+        "owner": "root@example.com",
+        "last_edited_by": "root@example.com",
+    }
+    json_alert2 = {
+        "name": "pytest_create_update_alert",
+        "org_id": "default",
+        "stream_type": "logs",
+        "stream_name": "default",
+        "is_real_time": False,
+        "query_condition": {
+            "type": "sql",
+            "conditions": [],
+            "sql": 'select count(*) from "default"',
+            "multi_time_range": [],
+        },
+        "trigger_condition": {
+            "period": 60,
+            "operator": "<=",
+            "threshold": 1,
+            "frequency": 60,
+            "cron": "",
+            "frequency_type": "minutes",
+            "silence": 60,
+            "timezone": "UTC",
+        },
+        "destinations": ["alert-destination-email"],
+        "context_attributes": {},
+        "row_template": "",
+        "description": "Description test alert 2",
+        "enabled": False,
+        "tz_offset": 0,
+        "owner": "root@example.com",
+        "last_edited_by": "root@example.com",
+    }
+
+    oo_conn.import_objects_split(
+        "alerts",
+        json_alert,
+        "",
+        verbosity=5,
+    )
+
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Create returns " in captured.out
+
+    oo_conn.create_update_object_by_name(
+        "alerts", json_alert2, verbosity=5, overwrite=True
+    )
+    # pylint: disable=unused-variable
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Alert Updated" in captured.out
+
+    oo_conn.delete_object_by_name("alerts", "pytest_create_update_alert", verbosity=5)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Alert deleted" in captured.out
+    assert "Delete object alerts url: " in captured.out
+    assert "Delete by name deleted 1 object(s)." in captured.out
+
+
 # if no matching user:
 # Openobserve returned 400. Text:
 # {"code":400,"message":"Email destination recipients must be part of this org"}
