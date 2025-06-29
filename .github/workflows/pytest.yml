@@ -68,11 +68,16 @@ jobs:
           EOF
           cat .env
 
-      - name: Test with pytest
+      - name: Test with pytest - offline
         run: |
-          [ -f .env ] && pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
           pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
         if: ${{ always() }}
+
+      - name: Test with pytest  - online
+        run: |
+          [ -f .env ] && pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
+        if: ${{ always() }}
+        continue-on-error: true
 
       - name: Upload pytest test results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # tag=v4.6.2
