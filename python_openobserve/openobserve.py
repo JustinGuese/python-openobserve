@@ -830,10 +830,18 @@ class OpenObserve:
                 verbosity,
                 level=0,
             )
-        else:
+        elif key2 in json_data:
             self._debug(
                 f"Try to create {object_type} {json_data[key2]}...", verbosity, level=0
             )
+        elif "name" in json_data:
+            self._debug(
+                f"Try to create {object_type} {json_data['name']}...",
+                verbosity,
+                level=0,
+            )
+        else:
+            self._debug(f"Try to create {object_type}...", verbosity, level=0)
         try:
             res = self.create_object(object_type, json_data, verbosity=verbosity)
             self._debug(f"Create returns {res}.", verbosity, level=0)
