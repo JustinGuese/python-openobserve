@@ -1,9 +1,9 @@
 # python-openobserve
 
-..
+<!--
     SPDX-FileCopyrightText: 2025 The python_openobserve authors
     SPDX-License-Identifier: CC-BY-SA-4.0
-..
+-->
 
 [![Actions Status - Main](https://github.com/JustinGuese/python-openobserve/workflows/AnsibleCI/badge.svg)](https://github.com/JustinGuese/python-openobserve/actions?query=branch%3Amain)
 [![PyPI Downloads](https://static.pepy.tech/badge/python-openobserve/week)](https://pepy.tech/projects/python-openobserve)

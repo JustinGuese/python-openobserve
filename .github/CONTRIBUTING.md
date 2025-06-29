@@ -1,9 +1,9 @@
 # Welcome to this project contributing guide
 
-..
+<!--
     SPDX-FileCopyrightText: 2025 The python_openobserve authors
     SPDX-License-Identifier: CC-BY-SA-4.0
-..
+-->
 
 Thank you for investing your time in contributing to our project!
 
