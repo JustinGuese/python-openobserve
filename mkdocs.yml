@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 site_name: python_openobserve Docs
 theme:
   name: "material"

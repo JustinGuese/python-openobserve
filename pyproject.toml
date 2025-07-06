@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 [tool.poetry]
 name = "python-openobserve"
 version = "0.2.0"
@@ -15,7 +17,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">3.9"
-requests = "^2.31.0"
+requests = "~=2.32.4"
 pydantic = "~=2.10"
 sqlglot = "~=26.4.0"
 

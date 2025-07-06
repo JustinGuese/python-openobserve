@@ -1,5 +1,10 @@
 # Tests
 
+<!--
+    SPDX-FileCopyrightText: 2025 The python_openobserve authors
+    SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 ## Pre-commit
 
 Github workflow includes pre-commit as a control point but it is expected that developers submitting PR use it locally.

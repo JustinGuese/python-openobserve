@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 fireducks==1.2.8
 guarddog==2.6.0
 jmespath==1.0.1
@@ -10,4 +12,4 @@ pytest==8.3.5
 pytest-cov==6.0.0
 python-dotenv==1.0.1
 types-jmespath==1.0.2.20240106
-types-requests==2.32.0.20241016
+types-requests==2.32.4.20250611
