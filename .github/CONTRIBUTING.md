@@ -1,5 +1,10 @@
 # Welcome to this project contributing guide
 
+<!--
+    SPDX-FileCopyrightText: 2025 The python_openobserve authors
+    SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 Thank you for investing your time in contributing to our project!
 
 In this guide you will get an overview of the code of conduct, license, coding style and the contribution workflow from opening an issue, creating a PR, reviewing, and merging the PR.

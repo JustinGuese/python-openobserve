@@ -1,4 +1,9 @@
-"""OpenObserve API module"""
+"""
+OpenObserve API module
+
+SPDX-FileCopyrightText: 2025 The python_openobserve authors
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
 
 # pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods,too-many-lines
 import base64

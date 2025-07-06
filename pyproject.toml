@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 [tool.poetry]
 name = "python-openobserve"
 version = "0.2.0"

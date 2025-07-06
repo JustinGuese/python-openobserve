@@ -1,1 +1,3 @@
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 typing_extensions==4.13.2
