@@ -17,7 +17,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">3.9"
-requests = "^2.31.0"
+requests = "~=2.32.4"
 pydantic = "~=2.10"
 sqlglot = "~=26.4.0"
 
