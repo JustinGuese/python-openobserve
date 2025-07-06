@@ -705,8 +705,9 @@ class OpenObserve:
           object_json: json source object to create
           verbosity: how verbose to run from 0/less to 5/more
         """
+        key_id = id_mapping.get(object_type, "id")
         url = self.openobserve_url.replace(
-            "[STREAM]", f"{object_type}/{object_json['name']}"
+            "[STREAM]", f"{object_type}/{object_json[key_id]}"
         )
         if object_type in ("alerts", "folders"):
             url = url.replace("/api", "/api/v2")
@@ -724,6 +725,43 @@ class OpenObserve:
         self._handle_response(res, f"update_object_{object_type}")
 
         self._debug("Update object completed", verbosity)
+        return True
+
+    def create_update_object_by_name(
+        self,
+        object_type: str,
+        object_json: dict,
+        verbosity: int = 0,
+        overwrite: bool = False,
+    ):
+        """Create/Update object by name
+        It will first list all objects of given type and erase all those matching exact name.
+
+        Args:
+          object_type: what kind of openobserve object
+          object_json: json source object to create/update
+          verbosity: how verbose to run from 0/less to 5/more
+          overwrite: overwrite an existing object - known upstream bug
+        """
+        key = key_mapping.get(object_type, "list")
+        key_id = id_mapping.get(object_type, "id")
+        key_name = name_mapping.get(object_type, "name")
+        object_name = object_json[key_name]
+        count_update = 0
+        current = self.list_objects(object_type, verbosity)
+        self._debug(f"Create/Update by name objects list: {current}", verbosity, 3)
+        for obj in current[key]:  # type:ignore[call-overload]
+            if "name" in obj and object_name == obj[key_name] and overwrite:
+                object_json[key_id] = obj[key_id]
+                self._debug(f"Create/Update by name matching object: {obj}", verbosity)
+                self.update_object(object_type, object_json, verbosity)
+                count_update += 1
+        self._debug(
+            f"Create/update by name updated {count_update} object(s).", verbosity, 1
+        )
+        if count_update == 0:
+            self.create_object(object_type, object_json, verbosity)
+            self._debug("Create/update by name created 1 object(s).", verbosity, 1)
         return True
 
     def delete_object(self, object_type: str, object_id: str, verbosity: int = 0):
@@ -835,10 +873,18 @@ class OpenObserve:
                 verbosity,
                 level=0,
             )
-        else:
+        elif key2 in json_data:
             self._debug(
                 f"Try to create {object_type} {json_data[key2]}...", verbosity, level=0
             )
+        elif "name" in json_data:
+            self._debug(
+                f"Try to create {object_type} {json_data['name']}...",
+                verbosity,
+                level=0,
+            )
+        else:
+            self._debug(f"Try to create {object_type}...", verbosity, level=0)
         try:
             res = self.create_object(object_type, json_data, verbosity=verbosity)
             self._debug(f"Create returns {res}.", verbosity, level=0)
