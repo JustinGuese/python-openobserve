@@ -70,3 +70,19 @@ OO.config_export(f"{tmpdir}/", verbosity=0, split=True)
 OO.config_export(f"{tmpdir}/", verbosity=0, outformat="csv")
 OO.config_export(f"{tmpdir}/", verbosity=0, outformat="xlsx")
 ```
+
+## Troubleshooting
+
+If you have issues, try:
+
+* increase verbosity
+* reproduce issue with curl directly
+* check known issues
+
+## Known issues
+
+There are notable gaps and inconsistence in openobserve API at Q2 2025. Check against documentation and swagger. Report API issues upstream.
+
+* folder_id in alerts creation is ignored
+* API field names are variable (id, alert_id)
+* API returns are inconsistent (use folderId at alert creation but get folder name at alert listing)

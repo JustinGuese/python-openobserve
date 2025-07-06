@@ -303,7 +303,7 @@ class OpenObserve:
     ) -> List[Dict]:
         """Execute API request with proper error handling and debugging"""
         url = self.openobserve_url.replace("[STREAM]", endpoint)
-        if endpoint in ("alerts", "folders"):
+        if endpoint in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(url, verbosity)
 
@@ -679,7 +679,7 @@ class OpenObserve:
           verbosity: how verbose to run from 0/less to 5/more
         """
         url = self.openobserve_url.replace("[STREAM]", object_type)
-        if object_type in ("alerts", "folders"):
+        if object_type in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(f"Create object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
@@ -709,7 +709,7 @@ class OpenObserve:
         url = self.openobserve_url.replace(
             "[STREAM]", f"{object_type}/{object_json[key_id]}"
         )
-        if object_type in ("alerts", "folders"):
+        if object_type in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(f"Update object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
@@ -749,13 +749,20 @@ class OpenObserve:
         object_name = object_json[key_name]
         count_update = 0
         current = self.list_objects(object_type, verbosity)
-        self._debug(f"Create/Update by name objects list: {current}", verbosity, 3)
+        self._debug(f"Create/Update by name objects list: {current}", verbosity, 4)
         for obj in current[key]:  # type:ignore[call-overload]
-            if "name" in obj and object_name == obj[key_name] and overwrite:
-                object_json[key_id] = obj[key_id]
-                self._debug(f"Create/Update by name matching object: {obj}", verbosity)
-                self.update_object(object_type, object_json, verbosity)
-                count_update += 1
+            if key_name in obj and object_name.strip() == obj[key_name].strip():
+                if overwrite:
+                    object_json[key_id] = obj[key_id]
+                    self._debug(
+                        f"Create/Update by name matching object: {obj}", verbosity, 3
+                    )
+                    self.update_object(object_type, object_json, verbosity)
+                    count_update += 1
+                    break
+
+                self._debug("  .. matching object but overwrite is false", verbosity, 1)
+                return False
         self._debug(
             f"Create/update by name updated {count_update} object(s).", verbosity, 1
         )
@@ -773,7 +780,7 @@ class OpenObserve:
           verbosity: how verbose to run from 0/less to 5/more
         """
         url = self.openobserve_url.replace("[STREAM]", f"{object_type}/{object_id}")
-        if object_type in ("alerts", "folders"):
+        if object_type in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(f"Delete object {object_type} url: {url}", verbosity, level=1)
 
