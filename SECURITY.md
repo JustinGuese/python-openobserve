@@ -1,5 +1,10 @@
 # Security policy
 
+<!--
+    SPDX-FileCopyrightText: 2025 The python_openobserve authors
+    SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 DISCLAIMER!
 
 * This is an opensource project. Best effort will be made to support its security and resiliency but as per license, no warranty.
