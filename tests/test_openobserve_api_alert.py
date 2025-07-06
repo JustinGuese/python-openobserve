@@ -10,6 +10,8 @@ import os
 
 # import json
 import pytest  # type: ignore
+import jmespath
+import requests
 from dotenv import load_dotenv  # type: ignore
 from python_openobserve.openobserve import OpenObserve
 
@@ -464,6 +466,96 @@ def test_create_update_alert(capsys):
     assert "Alert deleted" in captured.out
     assert "Delete object alerts url: " in captured.out
     assert "Delete by name deleted 1 object(s)." in captured.out
+
+
+def test_create_object_folder(capsys):
+    """Ensure can create folder to put alerts in"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    oo_conn.create_object(
+        "folders/alerts",
+        {
+            "name": "pytest_folder",
+            "description": "pytest folder",
+        },
+        verbosity=5,
+    )
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    assert "Return 200. Text: " in captured.out
+    assert "Create object completed" in captured.out
+    assert "Create object folders/alerts url:" in captured.out
+
+
+def test_create_alert_folder(capsys):
+    """Ensure create alert in a given folder works"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    folders = oo_conn.list_objects("folders/alerts")
+    pytest_folder = jmespath.search("list[?name=='pytest_folder']", folders)
+    pytest_folder_id = pytest_folder[0]["folderId"]
+
+    json_alert = {
+        # "id": "ksuid1234567890abcdefghijkl",  # not required
+        "name": "pytest_Test_Alert_folder",
+        "alert_condition": "some_condition",
+        "destinations": ["alert-destination-email"],
+        "threshold": 100,
+        "stream_name": "default",  # required
+        "enabled": False,
+        "folder_id": pytest_folder_id,
+        # "folder_id": "pytest_folder",
+    }
+
+    oo_conn.create_update_object_by_name(
+        "alerts",
+        json_alert,
+        verbosity=3,
+    )
+    captured = capsys.readouterr()
+    assert "Return 200. Text: " in captured.out
+    assert "Create object completed" in captured.out
+    assert "Alert saved" in captured.out
+    assert "Return 400. Text: " not in captured.out
+
+    alerts = oo_conn.list_objects("alerts")
+    current_alert = jmespath.search("list[?name=='pytest_Test_Alert_folder']", alerts)
+    # assert current_alert == ''
+    # FIXME! API asks folder_id at creation but returns folder name. and ignored anyway
+    # assert current_alert[0]['folder_id'] == pytest_folder_id
+    # assert current_alert[0]['folder_id'] == "pytest_folder"
+    assert current_alert[0]["folder_id"] == "default"
+
+    oo_conn.delete_object_by_name("alerts", "pytest_Test_Alert_folder", verbosity=5)
+    captured = capsys.readouterr()
+    assert "Openobserve returned 404." not in captured.out
+    # Can create successfully or not if already exists
+    assert "Return 200. Text: " in captured.out
+    assert "Alert deleted" in captured.out
+    assert "Delete object alerts url: " in captured.out
+    assert "Delete by name deleted 1 object(s)." in captured.out
+
+
+def test_delete_object_folder(capsys):
+    """Ensure can delete folder - after alerts tests"""
+    oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
+
+    folders = oo_conn.list_objects("folders/alerts")
+    pytest_folder = jmespath.search("list[?name=='pytest_folder']", folders)
+    pytest_folder_id = pytest_folder[0]["folderId"]
+
+    # FIXME! api returning non-json 'Return 200. Text: Folder deleted'
+    with pytest.raises(
+        requests.exceptions.JSONDecodeError,
+        match="Expecting value: line ",
+    ):
+        oo_conn.delete_object("folders/alerts", pytest_folder_id, verbosity=3)
+        captured = capsys.readouterr()
+        assert "Openobserve returned 404." not in captured.out
+        # Can create successfully or not if already exists
+        assert "Return 200. Text: " in captured.out
+        assert "Folder deleted" in captured.out
+        assert "Delete object folders/alerts url: " in captured.out
 
 
 # if no matching user:
