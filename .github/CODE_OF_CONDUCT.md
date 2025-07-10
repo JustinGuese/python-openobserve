@@ -1,5 +1,10 @@
 # Contributor Covenant Code of Conduct
 
+<!--
+    SPDX-FileCopyrightText: 2025 The python_openobserve authors
+    SPDX-License-Identifier: CC-BY-4.0
+-->
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our

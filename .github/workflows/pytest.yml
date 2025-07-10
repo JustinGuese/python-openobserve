@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 name: pytest
 
 on:
@@ -16,6 +18,13 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    env:
+      ANSIBLE_CALLBACKS_ENABLED: profile_tasks
+      ANSIBLE_EXTRA_VARS: ""
+      ANSIBLE_ROLE: juju4.openobserve
+      ANSIBLE_SUITE: default-full-python
+
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # tag=v4.2.2
@@ -25,17 +34,52 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install ansible dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install ansible-lint flake8 yamllint jmespath
+          which ansible
+          pip3 install ansible
+          pip3 show ansible
+          ls -l $HOME/.local/bin || true
+          ansible --version
+          git clone https://github.com/juju4/ansible-openobserve/ $GITHUB_WORKSPACE/$ANSIBLE_ROLE
+          cd $GITHUB_WORKSPACE/$ANSIBLE_ROLE
+          [ -f molecule/$ANSIBLE_SUITE/requirements.yml ] && ansible-galaxy install -r molecule/$ANSIBLE_SUITE/requirements.yml
+          { echo '[defaults]'; echo 'callback_enabled = profile_tasks, timer'; echo 'roles_path = ../:/home/runner/.ansible/roles'; echo 'ansible_python_interpreter: /usr/bin/python3'; } >> ansible.cfg
+      - name: Install OpenObserve
+        run: |
+          cd $GITHUB_WORKSPACE/$ANSIBLE_ROLE && ansible-playbook -i localhost, --connection=local --become -v molecule/$ANSIBLE_SUITE/converge.yml ${ANSIBLE_EXTRA_VARS}
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+        continue-on-error: true
+
       - name: Install dependencies
         run: |
           set -x
           pip install -e '.[all]'
           pip install -r requirements-dev.txt
 
-      - name: Test with pytest
+      - name: Set .env for online tests
+        run: |
+          set -x
+          cat > .env <<EOF
+          OPENOBSERVE_URL = "http://localhost:5080"
+          OPENOBSERVE_USER = "root@example.com"
+          OPENOBSERVE_PASS = "root@example.com"
+          EOF
+          cat .env
+
+      - name: Test with pytest - offline
+        run: |
+          pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
+
+      - name: Test with pytest  - online
         run: |
           [ -f .env ] && pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
-          pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html
         if: ${{ always() }}
+        continue-on-error: true
 
       - name: Upload pytest test results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # tag=v4.6.2

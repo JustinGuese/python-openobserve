@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 name: precommit
 
 on:
@@ -44,4 +46,3 @@ jobs:
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # tag=v3.0.1
         with:
           extra_args: --all-files --show-diff-on-failure
-        continue-on-error: true

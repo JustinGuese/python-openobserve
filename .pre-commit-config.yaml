@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -55,13 +57,25 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        # args: [-I, .codespellignore]
+        args: [-I, .codespellignore]
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
         # exclude: .*/tests/.*
+  - repo: https://github.com/jackdewinter/pymarkdown
+    rev: v0.9.30
+    hooks:
+      - id: pymarkdown
+        args:
+          - -d
+          - MD013
+          - scan
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v5.0.2
+    hooks:
+      - id: reuse-lint-file
   - repo: local
     hooks:
       - id: trufflehog

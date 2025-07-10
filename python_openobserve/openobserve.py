@@ -1,6 +1,11 @@
-"""OpenObserve API module"""
+"""
+OpenObserve API module
 
-# pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods
+SPDX-FileCopyrightText: 2025 The python_openobserve authors
+SPDX-License-Identifier: GPL-3.0-or-later
+"""
+
+# pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods,too-many-lines
 import base64
 import json
 
@@ -9,7 +14,6 @@ import os
 import sys
 import re
 from datetime import datetime
-from collections.abc import MutableMapping
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
 
@@ -72,27 +76,36 @@ name_mapping = {
 }
 
 
-def flatten(dictionary, parent_key="", separator="."):
-    """Flatten dictionary"""
+def flatten(dictionary: dict, parent_key="", separator="."):
+    """Flatten dictionary
+
+    Args:
+      dictionary: input dictionary to flatten
+    """
     items = []
     for key, value in dictionary.items():
         new_key = parent_key + separator + key if parent_key else key
-        if isinstance(value, MutableMapping):
-            items.extend(flatten(value, new_key, separator=separator).items())
-        else:
-            items.append((new_key, value))
+        items.append((new_key, value))
     return dict(items)
 
 
 def is_ksuid(input_string: str) -> bool:
-    """Is input a ksuid?"""
+    """Is input a ksuid?
+
+    Args:
+      input_string: string to validate
+    """
     if re.match(r"^[a-zA-Z0-9]{27}$", input_string):
         return True
     return False
 
 
 def is_name(input_string: str) -> bool:
-    """Is input a valid name aka alert_name?"""
+    """Is input a valid name aka alert_name?
+
+    Args:
+      input_string: string to validate
+    """
     if re.match(r"^[^:#\?&%\"'\s]+$", input_string):
         return True
     return False
@@ -101,20 +114,28 @@ def is_name(input_string: str) -> bool:
 class OpenObserve:
     """
     OpenObserve class based on OpenObserve REST API
-    https://openobserve.ai/docs/api/
-    https://<openobserve server>/swagger/
     """
 
     def __init__(
         self,
-        user,
-        password,
+        user: str,
+        password: str,
         *,
-        organisation="default",
-        host="http://localhost:5080",
-        verify=True,
-        timeout=10,
+        organisation: str = "default",
+        host: str = "http://localhost:5080",
+        verify: bool = True,
+        timeout: int = 10,
     ) -> None:
+        """Class __init__
+
+        Args:
+          user: openobserve instance username
+          password: openobserve instance matching password
+          organisation: openobserve instance organisation (default, _meta...)
+          host: url of openobserve instance
+          verify: validate certificate
+          timeout: default http timeout
+        """
         bas64encoded_creds = base64.b64encode(
             f"{user}:{password}".encode("utf-8")
         ).decode("utf-8")
@@ -222,6 +243,15 @@ class OpenObserve:
         """
         OpenObserve search function
         https://openobserve.ai/docs/api/search/search/
+
+        Args:
+          sql: input sql query
+          start_time: start of search interval, either datetime, either int/epoch
+          end_time: end of search interval, either datetime, either int/epoch
+          verbosity: how verbose to run from 0/less to 5/more
+          timeout: http timeout
+          timestamp_conversion_auto: try to convert automatically column containing time as name
+          timestamp_columns: convert given columns to timestamp
         """
         if isinstance(start_time, datetime):
             start_time = self.__timestampConvert(start_time, verbosity)
@@ -273,7 +303,7 @@ class OpenObserve:
     ) -> List[Dict]:
         """Execute API request with proper error handling and debugging"""
         url = self.openobserve_url.replace("[STREAM]", endpoint)
-        if endpoint in ("alerts", "folders"):
+        if endpoint in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(url, verbosity)
 
@@ -318,8 +348,16 @@ class OpenObserve:
         timestamp_columns: Union[List[str], None] = None,
     ) -> pandas.DataFrame:
         """
-        OpenObserve search function with df output
-        https://openobserve.ai/docs/api/search/search/
+        OpenObserve search function with pandas dataframe output
+
+        Args:
+          sql: input sql query
+          start_time: start of search interval, either datetime, either int/epoch
+          end_time: end of search interval, either datetime, either int/epoch
+          verbosity: how verbose to run from 0/less to 5/more
+          timeout: http timeout
+          timestamp_conversion_auto: try to convert automatically column containing time as name
+          timestamp_columns: convert given columns to timestamp
         """
         res_json_hits = self.search(
             sql,
@@ -361,7 +399,16 @@ class OpenObserve:
         timestamp_columns: Union[List[str], None] = None,
     ) -> polars.DataFrame:
         """
-        OpenObserve search function with polars df output
+        OpenObserve search function with polars dataframe output
+
+        Args:
+          sql: input sql query
+          start_time: start of search interval, either datetime, either int/epoch
+          end_time: end of search interval, either datetime, either int/epoch
+          verbosity: how verbose to run from 0/less to 5/more
+          timeout: http timeout
+          timestamp_conversion_auto: try to convert automatically column containing time as name
+          timestamp_columns: convert given columns to timestamp
         """
         res_json_hits = self.search(
             sql,
@@ -404,6 +451,15 @@ class OpenObserve:
     ) -> fireducks.core.pandas.DataFrame:
         """
         OpenObserve search function with fireducks df output
+
+        Args:
+          sql: input sql query
+          start_time: start of search interval, either datetime, either int/epoch
+          end_time: end of search interval, either datetime, either int/epoch
+          verbosity: how verbose to run from 0/less to 5/more
+          timeout: http timeout
+          timestamp_conversion_auto: try to convert automatically column containing time as name
+          timestamp_columns: convert given columns to timestamp
         """
         res_json_hits = self.search(
             sql,
@@ -446,6 +502,14 @@ class OpenObserve:
     ):
         """
         Export OpenObserve json configuration to split json files
+
+        Args:
+          object_type: what kind of openobserve object to export
+          json_data: object data to be exported
+          file_path: target file path or prefix
+          verbosity: how verbose to run from 0/less to 5/more
+          flat: put all files in a flat directory or tree hierarchy
+          strip: remove variables data like stats or updated_at fields
         """
         key = "list"
         key2 = "name"
@@ -535,7 +599,16 @@ class OpenObserve:
         flat: bool = False,
         strip: bool = False,
     ):
-        """Export OpenObserve configuration to json/csv/xlsx"""
+        """Export OpenObserve configuration aka all object types to json/csv/xlsx
+
+        Args:
+          file_path: target file path or prefix
+          verbosity: how verbose to run from 0/less to 5/more
+          outformat: json, csv, or xlsx
+          split: separate list of objects json in one file per object
+          flat: put all files in a flat directory or tree hierarchy
+          strip: remove variables data like stats or updated_at fields
+        """
 
         # Collect all configuration data
         object_types = {
@@ -598,9 +671,15 @@ class OpenObserve:
                         json.dump(object_data, f, ensure_ascii=False, indent=4)
 
     def create_object(self, object_type: str, object_json: dict, verbosity: int = 0):
-        """Create object"""
+        """Create object
+
+        Args:
+          object_type: what kind of openobserve object to export
+          object_json: json source object to create
+          verbosity: how verbose to run from 0/less to 5/more
+        """
         url = self.openobserve_url.replace("[STREAM]", object_type)
-        if object_type in ("alerts", "folders"):
+        if object_type in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(f"Create object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
@@ -619,11 +698,18 @@ class OpenObserve:
         return True
 
     def update_object(self, object_type: str, object_json: dict, verbosity: int = 0):
-        """Update object"""
+        """Update object
+
+        Args:
+          object_type: what kind of openobserve object to export
+          object_json: json source object to create
+          verbosity: how verbose to run from 0/less to 5/more
+        """
+        key_id = id_mapping.get(object_type, "id")
         url = self.openobserve_url.replace(
-            "[STREAM]", f"{object_type}/{object_json['name']}"
+            "[STREAM]", f"{object_type}/{object_json[key_id]}"
         )
-        if object_type in ("alerts", "folders"):
+        if object_type in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(f"Update object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
@@ -641,10 +727,60 @@ class OpenObserve:
         self._debug("Update object completed", verbosity)
         return True
 
+    def create_update_object_by_name(
+        self,
+        object_type: str,
+        object_json: dict,
+        verbosity: int = 0,
+        overwrite: bool = False,
+    ):
+        """Create/Update object by name
+        It will first list all objects of given type and erase all those matching exact name.
+
+        Args:
+          object_type: what kind of openobserve object
+          object_json: json source object to create/update
+          verbosity: how verbose to run from 0/less to 5/more
+          overwrite: overwrite an existing object - known upstream bug
+        """
+        key = key_mapping.get(object_type, "list")
+        key_id = id_mapping.get(object_type, "id")
+        key_name = name_mapping.get(object_type, "name")
+        object_name = object_json[key_name]
+        count_update = 0
+        current = self.list_objects(object_type, verbosity)
+        self._debug(f"Create/Update by name objects list: {current}", verbosity, 4)
+        for obj in current[key]:  # type:ignore[call-overload]
+            if key_name in obj and object_name.strip() == obj[key_name].strip():
+                if overwrite:
+                    object_json[key_id] = obj[key_id]
+                    self._debug(
+                        f"Create/Update by name matching object: {obj}", verbosity, 3
+                    )
+                    self.update_object(object_type, object_json, verbosity)
+                    count_update += 1
+                    break
+
+                self._debug("  .. matching object but overwrite is false", verbosity, 1)
+                return False
+        self._debug(
+            f"Create/update by name updated {count_update} object(s).", verbosity, 1
+        )
+        if count_update == 0:
+            self.create_object(object_type, object_json, verbosity)
+            self._debug("Create/update by name created 1 object(s).", verbosity, 1)
+        return True
+
     def delete_object(self, object_type: str, object_id: str, verbosity: int = 0):
-        """Delete object"""
+        """Delete object
+
+        Args:
+          object_type: what kind of openobserve object to export
+          object_id: object id (sometimes name) to delete
+          verbosity: how verbose to run from 0/less to 5/more
+        """
         url = self.openobserve_url.replace("[STREAM]", f"{object_type}/{object_id}")
-        if object_type in ("alerts", "folders"):
+        if object_type in ("alerts", "folders", "folders/alerts", "folders/dashboards"):
             url = url.replace("/api", "/api/v2")
         self._debug(f"Delete object {object_type} url: {url}", verbosity, level=1)
 
@@ -663,7 +799,14 @@ class OpenObserve:
     def delete_object_by_name(
         self, object_type: str, object_name: str, verbosity: int = 0
     ):
-        """Delete object by name"""
+        """Delete object by name
+        It will first list all objects of given type and erase all those matching exact name.
+
+        Args:
+          object_type: what kind of openobserve object to export
+          object_name: object name to delete
+          verbosity: how verbose to run from 0/less to 5/more
+        """
         key = key_mapping.get(object_type, "list")
         key_id = id_mapping.get(object_type, "id")
         key_name = name_mapping.get(object_type, "name")
@@ -691,7 +834,13 @@ class OpenObserve:
         """
         Import OpenObserve configuration from split json files
 
-        force: skip controls like ksuid
+        Args:
+          object_type: what kind of openobserve object to import
+          json_data: source json (this one or file_path, leave other empty string)
+          file_path: source file path or prefix (json_data or this one)
+          overwrite: overwrite an existing object - known upstream bug
+          verbosity: how verbose to run from 0/less to 5/more
+          force: skip controls like ksuid
         """
         key2 = name_mapping.get(object_type, "name")
         file = Path(file_path)
@@ -731,10 +880,18 @@ class OpenObserve:
                 verbosity,
                 level=0,
             )
-        else:
+        elif key2 in json_data:
             self._debug(
                 f"Try to create {object_type} {json_data[key2]}...", verbosity, level=0
             )
+        elif "name" in json_data:
+            self._debug(
+                f"Try to create {object_type} {json_data['name']}...",
+                verbosity,
+                level=0,
+            )
+        else:
+            self._debug(f"Try to create {object_type}...", verbosity, level=0)
         try:
             res = self.create_object(object_type, json_data, verbosity=verbosity)
             self._debug(f"Create returns {res}.", verbosity, level=0)
@@ -769,6 +926,13 @@ class OpenObserve:
         """Import objects from json file
         Note: API does not import list of objects, need to do one by one.
         FIXME! dashboards are always imported as new creating duplicates. no idempotence.
+
+        Args:
+          object_type: what kind of openobserve object to import
+          file_path: source file path or prefix (json_data or this one)
+          overwrite: overwrite an existing object - known upstream bug
+          verbosity: how verbose to run from 0/less to 5/more
+          split: separate list of objects json in one file per object
         """
         # Determine key mappings based on object type
         key_mappings = {
@@ -843,7 +1007,15 @@ class OpenObserve:
         verbosity: int = 0,
         split: bool = False,
     ):
-        """Import OpenObserve configuration from json files"""
+        """Import OpenObserve configuration from json files
+
+        Args:
+          object_type: what kind of openobserve object to import
+          file_path: source file path or prefix (json_data or this one)
+          overwrite: overwrite an existing object - known upstream bug
+          verbosity: how verbose to run from 0/less to 5/more
+          split: separate list of objects json in one file per object
+        """
 
         if object_type == "all" and split is True:
             importable_types = [
