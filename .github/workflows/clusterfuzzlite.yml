@@ -1,0 +1,68 @@
+---
+name: ClusterFuzzLite
+on:
+  push:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 6 * * 1'
+
+permissions: read-all
+
+jobs:
+  BatchFuzzing:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer:
+        - address
+        # - undefined
+        # - memory
+
+    services:
+      openobserve:
+        image: public.ecr.aws/zinclabs/openobserve:latest
+        ports:
+          - 5080:5080
+        env:
+          ZO_ROOT_USER_EMAIL: root@example.com
+          ZO_ROOT_USER_PASSWORD: Complexpass#123
+        options: >-
+          --health-cmd="curl --fail http://localhost:5080/health || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+    - name: Wait for OpenObserve to be ready
+      run: |
+          echo "Waiting for OpenObserve to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5080/health | grep -q '"status":"ok"'; then
+              echo "OpenObserve is ready!"
+              break
+            fi
+            sleep 2
+          done
+
+    - name: Build Fuzzers (${{ matrix.sanitizer }})
+      id: build
+      uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # tag=v1
+      with:
+        language: python
+        sanitizer: ${{ matrix.sanitizer }}
+
+    - name: Run Fuzzers (${{ matrix.sanitizer }})
+      id: run
+      uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # tag=v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fuzz-seconds: 300
+        mode: 'batch'
+        sanitizer: ${{ matrix.sanitizer }}
+        output-sarif: true
+        # Optional but recommended: For storing certain artifacts from fuzzing.
+        # See later section on "Git repo for storage".
+        # storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/OWNER/STORAGE-REPO-NAME.git
+        # storage-repo-branch: main   # Optional. Defaults to "main"
+        # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
