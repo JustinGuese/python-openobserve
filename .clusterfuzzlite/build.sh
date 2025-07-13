@@ -1,5 +1,7 @@
 # Build and install project (using current CFLAGS, CXXFLAGS). This is required
 # for projects with C extensions so that they're built with the proper flags.
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 ls -l
 pip3 install --upgrade pip
 pip3 install .

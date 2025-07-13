@@ -4,6 +4,9 @@ Fuzzing tests
 from `hypothesis write python_openobserve.openobserve`
 This test code was written by the `hypothesis.extra.ghostwriter` module
 and is provided under the Creative Commons Zero public domain dedication.
+
+SPDX-FileCopyrightText: 2025 The python_openobserve authors
+SPDX-License-Identifier: GPL-3.0-or-later
 """
 
 # pylint: disable=fixme,missing-function-docstring,too-many-arguments,too-many-positional-arguments
