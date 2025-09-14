@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2025 The python_openobserve authors
+# SPDX-License-Identifier: GPL-3.0-or-later
 homepage: https://pypi.org/project/python-openobserve/
 language: python
 main_repo: https://github.com/JustinGuese/python-openobserve
