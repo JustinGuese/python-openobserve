@@ -511,20 +511,19 @@ def test_create_alert_folder(capsys):
         "alerts",
         json_alert,
         verbosity=3,
+        # overwrite=True,
     )
     captured = capsys.readouterr()
     assert "Return 200. Text: " in captured.out
-    assert "Create object completed" in captured.out
-    assert "Alert saved" in captured.out
+    assert (
+        "Create object completed" in captured.out
+    )  # or "Update object completed" in captured.out
+    assert "Alert saved" in captured.out  # or "Alert Updated" in captured.out
     assert "Return 400. Text: " not in captured.out
 
     alerts = oo_conn.list_objects("alerts")
     current_alert = jmespath.search("list[?name=='pytest_Test_Alert_folder']", alerts)
-    # assert current_alert == ''
-    # FIXME! API asks folder_id at creation but returns folder name. and ignored anyway
-    # assert current_alert[0]['folder_id'] == pytest_folder_id
-    # assert current_alert[0]['folder_id'] == "pytest_folder"
-    assert current_alert[0]["folder_id"] == "default"
+    assert current_alert[0]["folder_id"] == pytest_folder_id
 
     oo_conn.delete_object_by_name("alerts", "pytest_Test_Alert_folder", verbosity=5)
     captured = capsys.readouterr()
