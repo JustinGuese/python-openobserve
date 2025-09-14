@@ -24,6 +24,8 @@ sqlglot = "~=26.4.0"
 [tool.optional-dependencies]
 ci = [
     "jmespath==1.0.1",
+    "memray==1.17.2",
+    "pytest-memray==1.7.0",
     "mypy==1.15.0",
     "mypy-extensions==1.0.0",
     "pandas==2.2.3",

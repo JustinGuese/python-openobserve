@@ -3,6 +3,7 @@
 fireducks==1.2.8
 guarddog==2.6.0
 jmespath==1.0.1
+memray==1.17.2
 mypy==1.15.0
 mypy-extensions==1.0.0
 pandas==2.2.3
@@ -10,6 +11,7 @@ pandas-stubs==2.2.2.240807
 polars==1.30.0
 pytest==8.3.5
 pytest-cov==6.0.0
+pytest-memray==1.7.0
 python-dotenv==1.0.1
 types-jmespath==1.0.2.20240106
 types-requests==2.32.4.20250611
