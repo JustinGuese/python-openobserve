@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 [tool.poetry]
 name = "python-openobserve"
-version = "0.3.0"
+version = "0.4.0"
 description = ""
 authors = ["Justin Guese <guese.justin@gmail.com>"]
 license = "GNUv3"
