@@ -40,7 +40,7 @@ jobs:
             ./ci/build.sh && \
             sudo make install
           cd ..
-          sudo apt-get install -y libunwind-dev debuginfod
+          sudo apt-get install -y libunwind-dev debuginfod libdebuginfod-dev
           pip install -r requirements-dev.txt
 
       - name: Generate requirements.txt
