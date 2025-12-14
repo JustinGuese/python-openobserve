@@ -39,6 +39,7 @@ jobs:
             cd libgit2-1.9.2 && \
             ./ci/build.sh && \
             sudo make install
+          cd ..
           pip install -r requirements-dev.txt
 
       - name: Generate requirements.txt
