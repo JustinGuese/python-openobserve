@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2025 The python_openobserve authors
 # SPDX-License-Identifier: GPL-3.0-or-later
-fireducks==1.2.8
 guarddog==2.7.0
 jmespath==1.0.1
 memray==1.17.2
