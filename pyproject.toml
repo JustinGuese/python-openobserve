@@ -50,7 +50,7 @@ polar = [
     "polars==1.30.0"
 ]
 fireducks = [
-    "fireducks==1.4.4"
+    "fireducks==1.2.8"
 ]
 all = ['pandas', 'tests', 'ci', 'docs', 'polars', 'fireducks']
 
