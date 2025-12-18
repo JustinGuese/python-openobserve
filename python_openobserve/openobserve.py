@@ -5,6 +5,8 @@ SPDX-FileCopyrightText: 2025 The python_openobserve authors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+from __future__ import annotations
+
 # pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods,too-many-lines
 import base64
 import json
