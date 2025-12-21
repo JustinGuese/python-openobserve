@@ -24,14 +24,14 @@ pandas = { version = ">2.2", optional = true }
 polars = { version = "==1.30.0", optional = true }
 fireducks = { version = "==1.2.8", optional = true }
 
-[tool.poetry.dev-dependencies]
-jmespath = "1.0.1"
-pytest = "8.3.5"
-memray = "1.17.2"
-pytest-memray = "1.7.0"
-mypy = "1.15.0"
-mypy-extensions = "1.0.0"
-python-dotenv = "1.0.1"
+[tool.poetry.group.dev.dependencies]
+jmespath = { version = "1.0.1", extras=["all"] }
+pytest = { version = "8.3.5", extras=["all"] }
+memray = { version = "1.17.2", extras=["all"] }
+pytest-memray = { version = "1.7.0", extras=["all"] }
+mypy = { version = "1.15.0", extras=["all"] }
+mypy-extensions = { version = "1.0.0", extras=["all"] }
+python-dotenv = { version = "1.0.1", extras=["all"] }
 
 [tool.poetry.extras]
 pandas = [
@@ -43,6 +43,7 @@ polar = [
 fireducks = [
     "fireducks"
 ]
+all = ['pandas', 'polars', 'fireducks']
 
 [tool.optional-dependencies]
 ci = [
