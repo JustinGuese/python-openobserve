@@ -6,7 +6,7 @@ name = "python-openobserve"
 version = "0.4.1"
 description = "OpenObserve client for Python"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 license-files = [
     "LICENSES/CC-BY-4.0.txt",
     "LICENSES/CC-BY-SA-4.0.txt",
@@ -53,16 +53,42 @@ docs = [
     "mkdocstrings==0.29.1",
 ]
 tests = ["pytest==8.3.5", "jmespath==1.0.1", "python-dotenv==1.0.1"]
-pandas = [
-    "pandas>2.2"
-]
-polars = [
-    "polars==1.30.0"
-]
-fireducks = [
-    "fireducks==1.2.8"
-]
-all = ['pandas', 'tests', 'ci', 'docs', 'polars', 'fireducks']
+pandas = ["pandas>=2.2"]
+polars = ["polars==1.30.0"]
+fireducks = ["fireducks==1.4.4"]
+
+[tool.poetry.group.test.dependencies]
+pytest = "8.3.5"
+jmespath = "1.0.1"
+python-dotenv = "1.0.1"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "1.6.1"
+mkdocs-material = "9.6.15"
+mkdocstrings = "0.29.1"
+
+[tool.poetry.group.ci.dependencies]
+jmespath = "1.0.1"
+memray = "1.17.2"
+pytest-memray = "1.7.0"
+mypy = "1.15.0"
+mypy-extensions = "1.0.0"
+pandas = "2.2.3"
+pandas-stubs = "2.2.2.240807"
+pytest = "8.3.5"
+pytest-cov = "6.0.0"
+python-dotenv = "1.0.1"
+types-jmespath = "1.0.2.20240106"
+types-requests = "2.32.0.20241016"
+guarddog = "2.6.0"
+
+[tool.poetry.group.pandas.dependencies]
+pandas = ">2.2"
+
+[tool.poetry.group.polars.dependencies]
+polars = "1.30.0"
+[tool.poetry.group.fireducks.dependencies]
+fireducks = "1.4.4"
 
 [build-system]
 requires = ["poetry-core"]
