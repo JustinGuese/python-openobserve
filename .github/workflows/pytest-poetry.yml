@@ -84,7 +84,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m poetry install --dev --all-extras
+          python -m poetry install --all-extras
 
       - name: Run tests
         run: |
