@@ -7,7 +7,11 @@ version = "0.4.1"
 description = "OpenObserve client for Python"
 readme = "README.md"
 requires-python = ">=3.10"
-license-files = [ "LICENSE" ]
+license-files = [
+    "LICENSES/CC-BY-4.0.txt",
+    "LICENSES/CC-BY-SA-4.0.txt",
+    "LICENSES/GPL-3.0-or-later.txt",
+]
 authors = [{name = "Justin Guese", email = "guese.justin@gmail.com"}]
 keywords = ["openobserve", "elasticsearch", "logging", "unstructured data"]
 classifiers = [
