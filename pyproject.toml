@@ -1,27 +1,33 @@
 # SPDX-FileCopyrightText: 2025 The python_openobserve authors
 # SPDX-License-Identifier: GPL-3.0-or-later
-[tool.poetry]
+
+[project]
 name = "python-openobserve"
 version = "0.4.1"
-description = ""
-authors = ["Justin Guese <guese.justin@gmail.com>"]
-license = "GNUv3"
+description = "OpenObserve client for Python"
 readme = "README.md"
-homepage = "https://github.com/JustinGuese/python-openobserve"
-repository = "https://github.com/JustinGuese/python-openobserve"
+requires-python = ">=3.10"
+license-files = [ "LICENSE" ]
+authors = [{name = "Justin Guese", email = "guese.justin@gmail.com"}]
 keywords = ["openobserve", "elasticsearch", "logging", "unstructured data"]
-packages = [{include = "python_openobserve"}]
-include = [
-    "LICENSE",
+classifiers = [
+    "Programming Language :: Python :: 3",
 ]
 
-[tool.poetry.dependencies]
-python = ">3.9"
-requests = "~=2.32.4"
-pydantic = "~=2.10"
-sqlglot = "~=26.4.0"
+dependencies = [
+    "requests~=2.32.4",
+    "pydantic~=2.10",
+    "sqlglot~=26.4.0",
+]
 
-[tool.optional-dependencies]
+[project.urls]
+Homepage = "https://github.com/JustinGuese/python-openobserve"
+Repository = "https://github.com/JustinGuese/python-openobserve"
+
+[project.scripts]
+python_openobserve = "python_openobserve:openobserve"
+
+[project.optional-dependencies]
 ci = [
     "jmespath==1.0.1",
     "memray==1.17.2",
@@ -42,20 +48,17 @@ docs = [
     "mkdocs-material==9.6.15",
     "mkdocstrings==0.29.1",
 ]
-tests = ["pytest", "jmespath", "python-dotenv"]
+tests = ["pytest==8.3.5", "jmespath==1.0.1", "python-dotenv==1.0.1"]
 pandas = [
     "pandas>2.2"
 ]
-polar = [
+polars = [
     "polars==1.30.0"
 ]
 fireducks = [
     "fireducks==1.2.8"
 ]
 all = ['pandas', 'tests', 'ci', 'docs', 'polars', 'fireducks']
-
-[tool.poetry.scripts]
-python_openobserve = 'python_openobserve:openobserve'
 
 [build-system]
 requires = ["poetry-core"]
