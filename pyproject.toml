@@ -22,7 +22,7 @@ pydantic = "~=2.10"
 sqlglot = "~=26.4.0"
 pandas = { version = ">2.2", optional = true }
 polars = { version = "==1.30.0", optional = true }
-fireducks = { version = "==1.2.8", optional = true }
+fireducks = { version = "==1.4.4", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 jmespath = { version = "1.0.1", extras=["all"] }
@@ -74,7 +74,7 @@ polar = [
     "polars==1.30.0"
 ]
 fireducks = [
-    "fireducks==1.2.8"
+    "fireducks==1.4.4"
 ]
 all = ['pandas', 'tests', 'ci', 'docs', 'polars', 'fireducks']
 
