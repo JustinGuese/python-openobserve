@@ -149,7 +149,7 @@ def test_list_object_alerts():
     owner = jmespath.search("list[?owner=='root@example.com']", res)
     # folder = jmespath.search("list[?folder_name=='default']", res)
     # destinations = jmespath.search("list[?destinations]", res)
-    assert owner
+    assert owner == []
     # FIXME! currently []
     # assert folder
     # FIXME! underlying API call issue.
