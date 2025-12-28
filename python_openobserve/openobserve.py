@@ -587,7 +587,17 @@ class OpenObserve:
 
         res_json = self.list_objects(object_type=object_type, verbosity=verbosity)
 
-        return pandas.json_normalize(res_json[key])  # type: ignore[index,call-overload]
+        if object_type in ["alerts/destinations", "alerts/templates"]:
+            return pandas.json_normalize(res_json)
+        if key in res_json:
+            return pandas.json_normalize(res_json[key])  # type: ignore[index,call-overload]
+
+        raise Exception(
+            (
+                f"list_objects2df: can't normalize data {res_json} "
+                f"for object type {object_type} and key {key}"
+            )
+        )
 
     def config_export(
         self,
