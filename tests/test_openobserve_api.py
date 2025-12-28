@@ -280,7 +280,9 @@ def test_search_sql_invalid1():
     sql = "SELECT NOT SQL"
     start_timeperiod = datetime.now() - timedelta(days=7)
     end_timeperiod = datetime.now()
-    with pytest.raises(Exception, match="Openobserve search returned 502."):
+    with pytest.raises(
+        Exception, match="Remote end closed connection without response"
+    ):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
         )
