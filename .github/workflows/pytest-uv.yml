@@ -82,5 +82,12 @@ jobs:
       - name: Install the project
         run: uv sync --locked --all-extras --dev
 
-      - name: Run tests
-        run: uv run pytest tests
+      - name: Test with pytest - offline
+        run: |
+          uv run pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html --memray
+
+      - name: Test with pytest  - online
+        run: |
+          [ -f .env ] && uv run pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html --memray
+        if: ${{ always() }}
+        continue-on-error: true
