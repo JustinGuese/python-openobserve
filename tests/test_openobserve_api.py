@@ -298,7 +298,7 @@ def test_search_sql_invalid2():
         Exception,
         # "Openobserve search returned 500. Text: "
         # '{"code":500,"message":"Error# SQL error:'
-        match=(" Expected: an SQL statement, found: INVALID"),
+        match=("Expected: an SQL statement, found: INVALID"),
     ):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
@@ -313,7 +313,7 @@ def test_search_sql_invalid3():
     end_timeperiod = datetime.now()
     with pytest.raises(
         Exception,
-        match=(" Expected: an SQL statement, found: NOT"),
+        match=("Expected: an SQL statement, found: NOT"),
     ):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
@@ -328,7 +328,7 @@ def test_search_sql_invalid4():
     end_timeperiod = datetime.now()
     with pytest.raises(
         Exception,
-        match=(" Expected: an SQL statement, found: 123"),
+        match=("Expected: an SQL statement, found: 123"),
     ):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
