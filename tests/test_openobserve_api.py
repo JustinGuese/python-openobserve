@@ -443,6 +443,7 @@ def test_search_df_limit1():
         sql,
         start_time=start_timeperiod,
         end_time=end_timeperiod,
+        query_size=10010,
         verbosity=5,
     )
     assert not df_search_results.empty
@@ -464,6 +465,7 @@ def test_search_df_limit2():
         sql,
         start_time=start_timeperiod,
         end_time=end_timeperiod,
+        query_size=100010,
         verbosity=5,
     )
     assert not df_search_results.empty
