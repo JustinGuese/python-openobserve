@@ -47,8 +47,8 @@ def test_connection_incorrect_params1():
     """Ensure error if incorrect parameter"""
     oo_conn = OpenObserve(host="invalid", user="***", password="")  # nosec B106
     with pytest.raises(
-        httpx.InvalidURL,
-        match="Invalid URL",
+        httpx.UnsupportedProtocol,
+        match="Request URL is missing an 'http://' or 'https://' protocol.",
     ):
         oo_conn.list_objects("streams")
 
@@ -59,8 +59,8 @@ def test_connection_incorrect_params2():
         host="invalid", user="invalid@example.com", password="", timeout=3  # nosec B106
     )
     with pytest.raises(
-        httpx.InvalidURL,
-        match="Invalid URL",
+        httpx.UnsupportedProtocol,
+        match="Request URL is missing an 'http://' or 'https://' protocol.",
     ):
         oo_conn.list_objects("streams")
 
@@ -88,7 +88,7 @@ def test_connection_incorrect_params4():
     )
     with pytest.raises(
         Exception,
-        match="Max retries exceeded with url:",
+        match="403 Forbidden",
     ):
         oo_conn.list_objects("streams")
 
@@ -147,13 +147,11 @@ def test_list_object_alerts():
     res = oo_conn.list_objects("alerts")
     pprint(res)
     owner = jmespath.search("list[?owner=='root@example.com']", res)
-    # folder = jmespath.search("list[?folder_name=='default']", res)
-    # destinations = jmespath.search("list[?destinations]", res)
+    folder = jmespath.search("list[?folder_name=='default']", res)
+    destinations = jmespath.search("list[?destinations]", res)
     assert owner == []
-    # FIXME! currently []
-    # assert folder
-    # FIXME! underlying API call issue.
-    # assert destinations != []
+    assert folder
+    assert destinations != []
 
 
 def test_config_export(tmpdir):
@@ -280,9 +278,8 @@ def test_search_sql_invalid1():
     sql = "SELECT NOT SQL"
     start_timeperiod = datetime.now() - timedelta(days=7)
     end_timeperiod = datetime.now()
-    with pytest.raises(
-        Exception, match="Remote end closed connection without response"
-    ):
+    # Openobserve search returned 500. Text: {"code":500,"message":"Error# Stream name is empty"}'
+    with pytest.raises(Exception, match="Error# Stream name is empty"):
         oo_conn.search(
             sql, start_time=start_timeperiod, end_time=end_timeperiod, verbosity=1
         )
