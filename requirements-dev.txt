@@ -13,5 +13,5 @@ pytest==8.3.5
 pytest-cov==6.0.0
 pytest-memray==1.7.0
 python-dotenv==1.0.1
+types-httpx
 types-jmespath==1.0.2.20240106
-types-requests==2.32.4.20250611

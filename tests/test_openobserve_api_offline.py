@@ -26,11 +26,11 @@ OO_HOST = OO_USER = OO_PASS = "MOCK_INPUT"  # nosec B105
 
 
 def mock_get(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.get"""
+    """MockResponse function for openobserve calls of httpx.get"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.get"""
+        """MockResponse class for openobserve calls of httpx.get"""
 
         def __init__(self, json_data, status_code):
             self.json_data = json_data
@@ -75,11 +75,11 @@ def mock_get(*args, **kwargs):
 
 
 def mock_get401(*args, **kwargs):
-    """MockResponse 401 function for openobserve calls of requests.get"""
+    """MockResponse 401 function for openobserve calls of httpx.get"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.get"""
+        """MockResponse class for openobserve calls of httpx.get"""
 
         def __init__(self, json_data, status_code, text):
             self.json_data = json_data
@@ -106,11 +106,11 @@ def mock_get401(*args, **kwargs):
 
 
 def mock_post(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.post"""
+    """MockResponse function for openobserve calls of httpx.post"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.post"""
+        """MockResponse class for openobserve calls of httpx.post"""
 
         def __init__(self, json_data, status_code, text):
             self.json_data = json_data
@@ -173,11 +173,11 @@ def mock_post(*args, **kwargs):
 
 
 def mock_post502(*args, **kwargs):
-    """MockResponse 502 function for openobserve calls of requests.post"""
+    """MockResponse 502 function for openobserve calls of httpx.post"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.post"""
+        """MockResponse class for openobserve calls of httpx.post"""
 
         def __init__(self, json_data, status_code, text, url):
             self.json_data = json_data
@@ -195,11 +195,11 @@ def mock_post502(*args, **kwargs):
 
 
 def mock_post500(*args, **kwargs):
-    """MockResponse 500 function for openobserve calls of requests.post"""
+    """MockResponse 500 function for openobserve calls of httpx.post"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.post"""
+        """MockResponse class for openobserve calls of httpx.post"""
 
         def __init__(self, json_data, status_code, text, url):
             self.json_data = json_data
@@ -228,7 +228,7 @@ def test_connection_settings():
     assert OO_PASS
 
 
-@patch("requests.get", side_effect=mock_get)
+@patch("httpx.get", side_effect=mock_get)
 def test_list_object_streams(mock_get):
     """Ensure can list streams and have 'default' one (list_objects)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -238,7 +238,7 @@ def test_list_object_streams(mock_get):
     assert default_stream
 
 
-@patch("requests.get", side_effect=mock_get401)
+@patch("httpx.get", side_effect=mock_get401)
 def test_list_object_streams401(mock_get):
     """Ensure can list streams and have 'default' one (list_objects)"""
     oo_conn = OpenObserve(
@@ -251,7 +251,7 @@ def test_list_object_streams401(mock_get):
         oo_conn.list_objects("streams", verbosity=5)
 
 
-@patch("requests.get", side_effect=mock_get)
+@patch("httpx.get", side_effect=mock_get)
 def test_list_object_users(mock_get):
     """Ensure can list users and have 'root@example.com' one (list_objects)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -261,7 +261,7 @@ def test_list_object_users(mock_get):
     assert user
 
 
-@patch("requests.post", side_effect=mock_post)
+@patch("httpx.post", side_effect=mock_post)
 def test_search1(mock_post):
     """Ensure can do logs search (default stream)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -275,7 +275,7 @@ def test_search1(mock_post):
     assert search_results
 
 
-@patch("requests.post", side_effect=mock_post)
+@patch("httpx.post", side_effect=mock_post)
 def test_search1_df(mock_post):
     """Ensure can do logs search (default stream, dataframe output)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -296,7 +296,7 @@ def test_search1_df(mock_post):
     assert "_timestamp" in df_search_results.columns
 
 
-@patch("requests.post", side_effect=mock_post)
+@patch("httpx.post", side_effect=mock_post)
 def test_search1_dftypes(mock_post):
     """Ensure can do logs search (default stream, dataframe output, timestamp type)"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -331,7 +331,7 @@ def test_search1_dftypes(mock_post):
     assert df_search_results["_timestamp"].dtypes == "datetime64[ns]"
 
 
-@patch("requests.post", side_effect=mock_post502)
+@patch("httpx.post", side_effect=mock_post502)
 def test_search_sql_invalid1(mock_post502):
     """Ensure error on invalid sql input"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -344,7 +344,7 @@ def test_search_sql_invalid1(mock_post502):
         )
 
 
-@patch("requests.post", side_effect=mock_post500)
+@patch("httpx.post", side_effect=mock_post500)
 def test_search_sql_invalid2(mock_post500):
     """Ensure error on invalid sql input"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -363,7 +363,7 @@ def test_search_sql_invalid2(mock_post500):
         )
 
 
-@patch("requests.post", side_effect=mock_post500)
+@patch("httpx.post", side_effect=mock_post500)
 def test_search_sql_invalid3(mock_post500):
     """Ensure error on invalid sql input"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -379,7 +379,7 @@ def test_search_sql_invalid3(mock_post500):
         )
 
 
-@patch("requests.post", side_effect=mock_post500)
+@patch("httpx.post", side_effect=mock_post500)
 def test_search_sql_invalid4(mock_post500):
     """Ensure error on invalid sql input"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -435,10 +435,10 @@ def test_search_time_invalid2():
 
 
 def mock_post_kunai(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.post - kunai stream"""
+    """MockResponse function for openobserve calls of httpx.post - kunai stream"""
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.post"""
+        """MockResponse class for openobserve calls of httpx.post"""
 
         def __init__(self, json_data, status_code):
             self.json_data = json_data
@@ -531,7 +531,7 @@ def mock_post_kunai(*args, **kwargs):
 # fixed bug: failed attempt to convert journald field 'body___monotonic_timestamp',
 # 'body__runtime_scope', and kunai 'info_utc_time' from __intts2datetime just
 # detecting 'time' in key
-@patch("requests.post", side_effect=mock_post_kunai)
+@patch("httpx.post", side_effect=mock_post_kunai)
 def test_search_time_conversion1(mock_post_kunai, capsys):
     """Repeat time conversion issue"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -550,7 +550,7 @@ def test_search_time_conversion1(mock_post_kunai, capsys):
     assert "could not convert timestamp:" in captured.out
 
 
-@patch("requests.post", side_effect=mock_post_kunai)
+@patch("httpx.post", side_effect=mock_post_kunai)
 def test_search_time_conversion2(mock_post_kunai, capsys):
     """Ensure no time conversion issue if no auto conversion"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -564,7 +564,7 @@ def test_search_time_conversion2(mock_post_kunai, capsys):
     assert "could not convert timestamp:" not in captured.out
 
 
-@patch("requests.post", side_effect=mock_post_kunai)
+@patch("httpx.post", side_effect=mock_post_kunai)
 def test_search_time_conversion3(mock_post_kunai, capsys):
     """Ensure correct explicit time conversion with search2df()"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -588,11 +588,11 @@ def test_search_time_conversion3(mock_post_kunai, capsys):
 
 
 def mock_delete404(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.delete"""
+    """MockResponse function for openobserve calls of httpx.delete"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.delete"""
+        """MockResponse class for openobserve calls of httpx.delete"""
 
         def __init__(self, json_data, status_code, text, url):
             self.json_data = json_data
@@ -614,7 +614,7 @@ def mock_delete404(*args, **kwargs):
     return MockResponse({}, 404, "", "https://openobserve.example.com")
 
 
-@patch("requests.delete", side_effect=mock_delete404)
+@patch("httpx.delete", side_effect=mock_delete404)
 def test_delete_object_users1(mock_delete404):
     """Ensure can delete users - invalid/non-existent"""
     # pylint: disable=no-member
@@ -629,11 +629,11 @@ def test_delete_object_users1(mock_delete404):
 
 
 def mock_post_users(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.post"""
+    """MockResponse function for openobserve calls of httpx.post"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.post"""
+        """MockResponse class for openobserve calls of httpx.post"""
 
         def __init__(self, json_data, status_code, text, url):
             self.json_data = json_data
@@ -656,11 +656,11 @@ def mock_post_users(*args, **kwargs):
 
 
 def mock_delete(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.delete"""
+    """MockResponse function for openobserve calls of httpx.delete"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.delete"""
+        """MockResponse class for openobserve calls of httpx.delete"""
 
         def __init__(self, json_data, status_code, text, url):
             self.json_data = json_data
@@ -682,7 +682,7 @@ def mock_delete(*args, **kwargs):
     return MockResponse({}, 200, "", "https://openobserve.example.com")
 
 
-@patch("requests.post", side_effect=mock_post_users)
+@patch("httpx.post", side_effect=mock_post_users)
 def test_create_object_users(mock_post_users, capsys):
     """Ensure can create and delete user"""
     # pylint: disable=no-member
@@ -708,11 +708,11 @@ def test_create_object_users(mock_post_users, capsys):
 
 
 def mock_post_alert1(*args, **kwargs):
-    """MockResponse function for openobserve calls of requests.post - post alert"""
+    """MockResponse function for openobserve calls of httpx.post - post alert"""
     url = args[0]
 
     class MockResponse:
-        """MockResponse class for openobserve calls of requests.post"""
+        """MockResponse class for openobserve calls of httpx.post"""
 
         def __init__(self, json_data, status_code, text, url):
             self.json_data = json_data
@@ -734,7 +734,7 @@ def mock_post_alert1(*args, **kwargs):
     return MockResponse({}, 200, "", "https://openobserve.example.com")
 
 
-@patch("requests.post", side_effect=mock_post_alert1)
+@patch("httpx.post", side_effect=mock_post_alert1)
 def test_import_alert1(mock_post_alert1, capsys):
     """Ensure import alert works"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -830,7 +830,7 @@ def test_import_alert6():
         )
 
 
-@patch("requests.post", side_effect=mock_post)
+@patch("httpx.post", side_effect=mock_post)
 def test_import_user1(capsys):
     """Ensure import user works"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -859,7 +859,7 @@ def test_import_user1(capsys):
     # assert "Create returns True" in captured.out
 
 
-@patch("requests.delete", side_effect=mock_delete)
+@patch("httpx.delete", side_effect=mock_delete)
 def test_delete_object_users(mock_delete, capsys):
     """Ensure can create and delete user"""
     # pylint: disable=no-member
@@ -873,7 +873,7 @@ def test_delete_object_users(mock_delete, capsys):
     assert "Delete object completed" in captured.out
 
 
-@patch("requests.post", side_effect=mock_post)
+@patch("httpx.post", side_effect=mock_post)
 def test_import_function1(capsys):
     """Ensure import function works"""
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
@@ -910,7 +910,7 @@ def test_import_function1(capsys):
     # assert "Create returns True" in captured.out
 
 
-@patch("requests.post", side_effect=mock_post)
+@patch("httpx.post", side_effect=mock_post)
 def test_import_pipeline1(capsys):
     """
     Ensure import pipeline works

@@ -13,7 +13,7 @@ from pprint import pprint
 import pytest  # type: ignore
 import sqlglot  # type: ignore
 import jmespath
-import requests
+import httpx
 from dotenv import load_dotenv  # type: ignore
 from python_openobserve.openobserve import OpenObserve, is_ksuid, is_name
 
@@ -47,7 +47,7 @@ def test_connection_incorrect_params1():
     """Ensure error if incorrect parameter"""
     oo_conn = OpenObserve(host="invalid", user="***", password="")  # nosec B106
     with pytest.raises(
-        requests.exceptions.MissingSchema,
+        httpx.InvalidURL,
         match="Invalid URL",
     ):
         oo_conn.list_objects("streams")
@@ -59,7 +59,7 @@ def test_connection_incorrect_params2():
         host="invalid", user="invalid@example.com", password="", timeout=3  # nosec B106
     )
     with pytest.raises(
-        requests.exceptions.MissingSchema,
+        httpx.InvalidURL,
         match="Invalid URL",
     ):
         oo_conn.list_objects("streams")
