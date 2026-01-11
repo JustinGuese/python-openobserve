@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "requests~=2.32.4",
+    "httpx~=0.28",
     "pydantic~=2.10",
     "sqlglot~=26.4.0",
 ]
@@ -44,7 +44,6 @@ ci = [
     "pytest-cov==6.0.0",
     "python-dotenv==1.0.1",
     "types-jmespath==1.0.2.20240106",
-    "types-requests==2.32.0.20241016",
     "guarddog==2.6.0",
 ]
 docs = [
@@ -80,7 +79,6 @@ pytest = "8.3.5"
 pytest-cov = "6.0.0"
 python-dotenv = "1.0.1"
 types-jmespath = "1.0.2.20240106"
-types-requests = "2.32.0.20241016"
 guarddog = "2.6.0"
 
 [tool.poetry.group.pandas.dependencies]
