@@ -237,6 +237,7 @@ class OpenObserve:
         *,
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
+        query_size: int = 1000,
         verbosity: int = 0,
         timeout: int = 300,
         timestamp_conversion_auto: bool = False,
@@ -245,11 +246,14 @@ class OpenObserve:
         """
         OpenObserve search function
         https://openobserve.ai/docs/api/search/search/
+        https://github.com/openobserve/openobserve/commit/3ccf0be93391885136377b41a4cc2a36d80f904a
 
         Args:
           sql: input sql query
           start_time: start of search interval, either datetime, either int/epoch
           end_time: end of search interval, either datetime, either int/epoch
+          query_size: maximum number of results returned (default: 1000)
+                      See also ZO_QUERY_DEFAULT_LIMIT
           verbosity: how verbose to run from 0/less to 5/more
           timeout: http timeout
           timestamp_conversion_auto: try to convert automatically column containing time as name
@@ -274,7 +278,14 @@ class OpenObserve:
         except sqlglot.errors.ParseError as e:
             raise e
 
-        query = {"query": {"sql": sql, "start_time": start_time, "end_time": end_time}}
+        query = {
+            "query": {
+                "sql": sql,
+                "start_time": start_time,
+                "end_time": end_time,
+                "size": query_size,
+            }
+        }
         self._debug(query, verbosity)
 
         res = httpx.post(
@@ -344,6 +355,7 @@ class OpenObserve:
         *,
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
+        query_size: int = 1000,
         verbosity: int = 0,
         timeout: int = 300,
         timestamp_conversion_auto: bool = False,
@@ -356,6 +368,7 @@ class OpenObserve:
           sql: input sql query
           start_time: start of search interval, either datetime, either int/epoch
           end_time: end of search interval, either datetime, either int/epoch
+          query_size: maximum number of results returned (default: 1000)
           verbosity: how verbose to run from 0/less to 5/more
           timeout: http timeout
           timestamp_conversion_auto: try to convert automatically column containing time as name
@@ -365,6 +378,7 @@ class OpenObserve:
             sql,
             start_time=start_time,
             end_time=end_time,
+            query_size=query_size,
             verbosity=verbosity,
             timeout=timeout,
             timestamp_conversion_auto=timestamp_conversion_auto,
