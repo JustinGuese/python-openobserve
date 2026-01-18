@@ -6,6 +6,7 @@ jmespath==1.0.1
 memray==1.17.2
 mypy==1.15.0
 mypy-extensions==1.0.0
+openpyxl==3.1.5
 pandas==2.2.3
 pandas-stubs==2.2.2.240807
 polars==1.30.0
