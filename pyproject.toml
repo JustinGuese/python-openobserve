@@ -19,8 +19,11 @@ classifiers = [
 ]
 
 dependencies = [
+    "cryptography>=46.0.5",
     "httpx~=0.28",
+    "protobuf>=6.33.5",
     "pydantic~=2.10",
+    "python-multipart>=0.0.22",
     "sqlglot~=26.4.0",
 ]
 
