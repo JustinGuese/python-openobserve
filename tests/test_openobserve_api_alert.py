@@ -11,7 +11,7 @@ import os
 # import json
 import pytest  # type: ignore
 import jmespath
-import requests
+import httpx
 from dotenv import load_dotenv  # type: ignore
 from python_openobserve.openobserve import OpenObserve
 
@@ -545,7 +545,7 @@ def test_delete_object_folder(capsys):
 
     # FIXME! api returning non-json 'Return 200. Text: Folder deleted'
     with pytest.raises(
-        requests.exceptions.JSONDecodeError,
+        httpx.DecodingError,
         match="Expecting value: line ",
     ):
         oo_conn.delete_object("folders/alerts", pytest_folder_id, verbosity=3)

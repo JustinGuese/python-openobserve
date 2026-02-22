@@ -34,10 +34,10 @@ repos:
     rev: v3.3.5
     hooks:
       - id: pylint
-        additional_dependencies: ["requests", "sqlglot", "pandas", "pytest", "jmespath", "python-dotenv", "polars", "fireducks", "hypothesis"]
+        additional_dependencies: ["httpx", "sqlglot", "pandas", "pytest", "jmespath", "python-dotenv", "polars", "fireducks", "hypothesis"]
         args: [
                   # E1101: Instance of 'LookupDict' has no 'ok' member (no-member)
-                  '--generated-member=requests.codes.ok'
+                  '--generated-member=httpx.codes.ok'
               ]
   # https://github.com/python/mypy/issues/13916
   # https://jaredkhan.com/blog/mypy-pre-commit
