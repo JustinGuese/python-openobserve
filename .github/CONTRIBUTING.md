@@ -13,19 +13,19 @@ Following these guidelines helps to communicate that you respect the time of the
 
 ## New contributor guide
 
-To get an overview of the project, read the [README](README.md).
+To get an overview of the project, read the [README](/README.md).
 
 ### Code of Conduct
 
-Read our [Code of Conduct](./.github/CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
+Read our [Code of Conduct](/.github/CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
 
 ### Security
 
-Read our [SECURITY.md](./SECURITY.md) about our security policy and how to report security issue.
+Read our [SECURITY.md](/SECURITY.md) about our security policy and how to report security issue.
 
 ### Any contributions you make will be under the same license than the project
 
-In short, when you submit code changes, your submissions are understood to be under the same [License](./LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
+In short, when you submit code changes, your submissions are understood to be under the same [License](/LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
 
 ### Use a Consistent Coding Style
 
