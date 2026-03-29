@@ -1,0 +1,51 @@
+{
+ "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+ "extends": [
+  "config:best-practices"
+ ],
+ "packageRules": [
+  {
+   "description": "Automerge non-major updates",
+   "matchUpdateTypes": [
+    "minor",
+    "patch",
+    "pin",
+    "pinDigest",
+    "digest",
+    "lockFileMaintenance"
+   ],
+   "automerge": true,
+   "addLabels": [
+    "automerge"
+   ],
+   "minimumReleaseAge": "1 day"
+  },
+  {
+   "matchManagers": [
+    "python"
+   ],
+   "groupName": "{{manager}}"
+  }
+ ],
+ "vulnerabilityAlerts": {
+  "labels": [
+   "security"
+  ],
+  "automerge": true,
+  "assignees": [
+   "@renovate-tests"
+  ],
+  "groupName": null,
+  "schedule": [],
+  "dependencyDashboardApproval": false,
+  "minimumReleaseAge": null,
+  "rangeStrategy": "update-lockfile",
+  "commitMessageSuffix": "[SECURITY]",
+  "branchTopic": "{{{datasource}}}-{{{depNameSanitized}}}-vulnerability",
+  "prCreation": "immediate",
+  "vulnerabilityFixStrategy": "lowest"
+ },
+ "pre-commit": {
+  "enabled": true
+ }
+}
