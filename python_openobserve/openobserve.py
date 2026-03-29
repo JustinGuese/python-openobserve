@@ -5,6 +5,8 @@ SPDX-FileCopyrightText: 2025 The python_openobserve authors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+from __future__ import annotations
+
 # pylint: disable=too-many-arguments,bare-except,broad-exception-raised,broad-exception-caught,too-many-public-methods,too-many-lines
 import base64
 import json
@@ -17,7 +19,7 @@ from datetime import datetime
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
 
-import requests
+import httpx
 import sqlglot  # type: ignore
 
 try:
@@ -157,10 +159,10 @@ class OpenObserve:
             pprint(msg)
 
     def _handle_response(
-        self, res: requests.Response, action: str = "request"
+        self, res: httpx.Response, action: str = "request"
     ) -> List[Dict]:
         """Handle API response and return JSON if successful"""
-        if res.status_code != requests.codes.ok:
+        if res.status_code != httpx.codes.OK:
             raise Exception(
                 f"Openobserve {action} returned {res.status_code}. Text: {res.text}"
             )
@@ -212,7 +214,7 @@ class OpenObserve:
         assert isinstance(document, dict), "document must be a dict"
         document = self.__datetime2Str(flatten(document))
 
-        res = requests.post(
+        res = httpx.post(
             f"{self.openobserve_url.replace('[STREAM]', index)}/_json",
             headers=self.headers,
             json=[document],
@@ -235,6 +237,7 @@ class OpenObserve:
         *,
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
+        query_size: int = 1000,
         verbosity: int = 0,
         timeout: int = 300,
         timestamp_conversion_auto: bool = False,
@@ -243,11 +246,14 @@ class OpenObserve:
         """
         OpenObserve search function
         https://openobserve.ai/docs/api/search/search/
+        https://github.com/openobserve/openobserve/commit/3ccf0be93391885136377b41a4cc2a36d80f904a
 
         Args:
           sql: input sql query
           start_time: start of search interval, either datetime, either int/epoch
           end_time: end of search interval, either datetime, either int/epoch
+          query_size: maximum number of results returned (default: 1000)
+                      See also ZO_QUERY_DEFAULT_LIMIT
           verbosity: how verbose to run from 0/less to 5/more
           timeout: http timeout
           timestamp_conversion_auto: try to convert automatically column containing time as name
@@ -272,10 +278,17 @@ class OpenObserve:
         except sqlglot.errors.ParseError as e:
             raise e
 
-        query = {"query": {"sql": sql, "start_time": start_time, "end_time": end_time}}
+        query = {
+            "query": {
+                "sql": sql,
+                "start_time": start_time,
+                "end_time": end_time,
+                "size": query_size,
+            }
+        }
         self._debug(query, verbosity)
 
-        res = requests.post(
+        res = httpx.post(
             f"{self.openobserve_url.replace('/[STREAM]', '')}/_search",
             json=query,
             headers=self.headers,
@@ -308,7 +321,7 @@ class OpenObserve:
         self._debug(url, verbosity)
 
         if method == "GET":
-            res = requests.get(
+            res = httpx.get(
                 url,
                 headers=self.headers,
                 params=params,
@@ -316,7 +329,7 @@ class OpenObserve:
                 timeout=self.timeout,
             )
         elif method == "POST":
-            res = requests.post(
+            res = httpx.post(
                 url,
                 headers=self.headers,
                 json=json_data,
@@ -324,7 +337,7 @@ class OpenObserve:
                 timeout=self.timeout,
             )
         elif method == "PUT":
-            res = requests.put(
+            res = httpx.put(
                 url,
                 headers=self.headers,
                 json=json_data,
@@ -342,6 +355,7 @@ class OpenObserve:
         *,
         start_time: Union[datetime, int] = 0,
         end_time: Union[datetime, int] = 0,
+        query_size: int = 1000,
         verbosity: int = 0,
         timeout: int = 300,
         timestamp_conversion_auto: bool = False,
@@ -354,6 +368,7 @@ class OpenObserve:
           sql: input sql query
           start_time: start of search interval, either datetime, either int/epoch
           end_time: end of search interval, either datetime, either int/epoch
+          query_size: maximum number of results returned (default: 1000)
           verbosity: how verbose to run from 0/less to 5/more
           timeout: http timeout
           timestamp_conversion_auto: try to convert automatically column containing time as name
@@ -363,6 +378,7 @@ class OpenObserve:
             sql,
             start_time=start_time,
             end_time=end_time,
+            query_size=query_size,
             verbosity=verbosity,
             timeout=timeout,
             timestamp_conversion_auto=timestamp_conversion_auto,
@@ -696,7 +712,7 @@ class OpenObserve:
         self._debug(f"Create object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Create object json input: {object_json}", verbosity, level=2)
 
-        res = requests.post(
+        res = httpx.post(
             url,
             json=object_json,
             headers=self.headers,
@@ -728,7 +744,7 @@ class OpenObserve:
         self._debug(f"Update object {object_type} url: {url}", verbosity, level=1)
         self._debug(f"Update object json input: {object_json}", verbosity, level=2)
 
-        res = requests.put(
+        res = httpx.put(
             url,
             json=object_json,
             headers=self.headers,
@@ -798,7 +814,7 @@ class OpenObserve:
             url = url.replace("/api", "/api/v2")
         self._debug(f"Delete object {object_type} url: {url}", verbosity, level=1)
 
-        res = requests.delete(
+        res = httpx.delete(
             url,
             headers=self.headers,
             verify=self.verify,
