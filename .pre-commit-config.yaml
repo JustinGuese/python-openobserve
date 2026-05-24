@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
@@ -27,11 +27,11 @@ repos:
       # - id: detect-aws-credentials
       - id: check-docstring-first
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 26.5.1
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.5
+    rev: v4.0.5
     hooks:
       - id: pylint
         additional_dependencies: ["httpx", "sqlglot", "pandas", "pytest", "jmespath", "python-dotenv", "polars", "fireducks", "hypothesis"]
@@ -42,19 +42,19 @@ repos:
   # https://github.com/python/mypy/issues/13916
   # https://jaredkhan.com/blog/mypy-pre-commit
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: f40886d54c729f533f864ed6ce584e920feb0af7  # 1.15.0
+    rev: v2.1.0  # 1.15.0
     hooks:
       - id: mypy
         language: system
         pass_filenames: false
         args: ['.']
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.3
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: ["-c", "pyproject.toml"]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.2
     hooks:
       - id: codespell
         args: [-I, .codespellignore]
@@ -65,7 +65,7 @@ repos:
         args: ['--baseline', '.secrets.baseline']
         # exclude: .*/tests/.*
   - repo: https://github.com/jackdewinter/pymarkdown
-    rev: v0.9.30
+    rev: v0.9.37
     hooks:
       - id: pymarkdown
         args:
@@ -78,7 +78,7 @@ repos:
       - id: markdown-link-check
         args: [-q]
   - repo: https://github.com/fsfe/reuse-tool
-    rev: v5.0.2
+    rev: v6.2.0
     hooks:
       - id: reuse-lint-file
   - repo: local
