@@ -45,10 +45,8 @@ jobs:
 
       - name: Install ansible dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install ansible-lint flake8 yamllint jmespath
+          pip3 install --require-hashes -r requirements-ansible.txt
           which ansible
-          pip3 install ansible
           pip3 show ansible
           ls -l $HOME/.local/bin || true
           ansible --version
@@ -67,8 +65,8 @@ jobs:
       - name: Install dependencies
         run: |
           set -x
-          pip install -e '.[all]'
-          pip install -r requirements-dev.txt
+          pip install --no-deps -e '.[all]'
+          pip install --require-hashes -r requirements-dev.txt
 
       - name: Set .env for online tests
         run: |
