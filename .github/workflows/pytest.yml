@@ -51,8 +51,11 @@ jobs:
           ls $GITHUB_WORKSPACE
       - name: Install ansible dependencies
         run: |
-          pip3 install --require-hashes -r $GITHUB_WORKSPACE/requirements-ansible.txt
+          pip3 install -r $GITHUB_WORKSPACE/requirements-ansible.txt
+          python3 -m pip install --upgrade pip
+          pip3 install ansible-lint flake8 yamllint jmespath
           which ansible
+          pip3 install ansible
           pip3 show ansible
           ls -l $HOME/.local/bin || true
           ansible --version
@@ -71,8 +74,8 @@ jobs:
       - name: Install dependencies
         run: |
           set -x
-          pip install --no-deps -e '.[all]'
-          pip install --require-hashes -r requirements-dev.txt
+          pip install -e '.[all]'
+          pip install -r requirements-dev.txt
 
       - name: Set .env for online tests
         run: |
