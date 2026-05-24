@@ -43,9 +43,15 @@ jobs:
             ./.venv
           key: ${{ runner.os }}-pyo2-${{ steps.get-date.outputs.date }}
 
+      - name: Environment
+        run: |
+          set -x
+          pwd
+          ls
+          ls $GITHUB_WORKSPACE
       - name: Install ansible dependencies
         run: |
-          pip3 install --require-hashes -r requirements-ansible.txt
+          pip3 install --require-hashes -r $GITHUB_WORKSPACE/requirements-ansible.txt
           which ansible
           pip3 show ansible
           ls -l $HOME/.local/bin || true
