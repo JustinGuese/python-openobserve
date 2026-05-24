@@ -47,7 +47,7 @@ ci = [
     "mypy-extensions==1.0.0",
     "pandas==2.2.3",
     "pandas-stubs==2.2.2.240807",
-    "pytest==8.3.5",
+    "pytest==9.0.3",
     "pytest-cov==6.0.0",
     "python-dotenv==1.2.2",
     "types-jmespath==1.0.2.20240106",
@@ -58,13 +58,13 @@ docs = [
     "mkdocs-material==9.6.15",
     "mkdocstrings==0.29.1",
 ]
-tests = ["pytest==8.3.5", "jmespath==1.0.1", "python-dotenv==1.2.2"]
+tests = ["pytest==9.0.3", "jmespath==1.0.1", "python-dotenv==1.2.2"]
 pandas = ["pandas>=2.2"]
 polars = ["polars==1.30.0"]
 fireducks = ["fireducks==1.4.4"]
 
 [tool.poetry.group.test.dependencies]
-pytest = "8.3.5"
+pytest = "9.0.3"
 jmespath = "1.0.1"
 python-dotenv = "1.2.2"
 
@@ -82,7 +82,7 @@ mypy-extensions = "1.0.0"
 pandas = "2.2.3"
 openpyxl = "3.1.5"
 pandas-stubs = "2.2.2.240807"
-pytest = "8.3.5"
+pytest = "9.0.3"
 pytest-cov = "6.0.0"
 python-dotenv = "1.2.2"
 types-jmespath = "1.0.2.20240106"
