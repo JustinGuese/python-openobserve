@@ -564,7 +564,7 @@ wheels = [
 
 [[package]]
 name = "guarddog"
-version = "2.7.1"
+version = "2.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -583,9 +583,9 @@ dependencies = [
     { name = "urllib3" },
     { name = "yara-python" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/3a/22450e9787837f9542455d3f4e4103811e5885c9fa9d073afa3b28213185/guarddog-2.7.1.tar.gz", hash = "sha256:c3ba9adbf4dd68f61ef97f1633911b7495a0a954a7323fe60d106bb6da559bf0", size = 296688, upload-time = "2026-01-09T16:31:26.964Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/10/7e/7b20ddded2a8e04156bcfd1f296249be59914b21a423b86b5ebe5892377b/guarddog-2.9.0.tar.gz", hash = "sha256:744476af7095558b99a9b328918df3071535b356fe8e7156406800a263aea386", size = 242790, upload-time = "2026-02-06T14:40:55.117Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/40/d35f41a072aed05c0bb8a3eae3c0ddf04bb8e49de0a44afb69b31153f164/guarddog-2.7.1-py3-none-any.whl", hash = "sha256:d21acc637ea0610cada5fd7d4deccd0451899ae18bc10c1b53f63e6be20e8e94", size = 344705, upload-time = "2026-01-09T16:31:25.031Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/8c/9d8f45ad9b822a4d4469dcf5a3729a497563afaf4c4cbf59880bb16da683/guarddog-2.9.0-py3-none-any.whl", hash = "sha256:5d17ee5ecbc5f1af920384618fca4bcd8099d45bcf508ca62fcd2029ef15f57c", size = 291261, upload-time = "2026-02-06T14:40:52.535Z" },
 ]
 
 [[package]]
@@ -1935,7 +1935,7 @@ tests = [
 requires-dist = [
     { name = "cryptography", specifier = ">=46.0.6,<47.0.0" },
     { name = "fireducks", marker = "extra == 'fireducks'", specifier = "==1.4.4" },
-    { name = "guarddog", marker = "extra == 'ci'", specifier = "==2.7.1" },
+    { name = "guarddog", marker = "extra == 'ci'", specifier = "==2.9.0" },
     { name = "h11", specifier = "~=0.16.0" },
     { name = "httpcore", specifier = "~=1.0.9" },
     { name = "httpx", specifier = "~=0.28" },
@@ -2420,11 +2420,11 @@ wheels = [
 
 [[package]]
 name = "termcolor"
-version = "2.5.0"
+version = "3.3.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/37/72/88311445fd44c455c7d553e61f95412cf89054308a1aa2434ab835075fc5/termcolor-2.5.0.tar.gz", hash = "sha256:998d8d27da6d48442e8e1f016119076b690d962507531df4890fcd2db2ef8a6f", size = 13057, upload-time = "2024-10-06T19:50:04.115Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/79/cf31d7a93a8fdc6aa0fbb665be84426a8c5a557d9240b6239e9e11e35fc5/termcolor-3.3.0.tar.gz", hash = "sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5", size = 14434, upload-time = "2025-12-29T12:55:21.882Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7f/be/df630c387a0a054815d60be6a97eb4e8f17385d5d6fe660e1c02750062b4/termcolor-2.5.0-py3-none-any.whl", hash = "sha256:37b17b5fc1e604945c2642c872a3764b5d547a48009871aea3edd3afa180afb8", size = 7755, upload-time = "2024-10-06T19:50:02.097Z" },
+    { url = "https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl", hash = "sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5", size = 7734, upload-time = "2025-12-29T12:55:20.718Z" },
 ]
 
 [[package]]
