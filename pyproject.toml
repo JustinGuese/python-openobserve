@@ -94,7 +94,7 @@ pandas = ">2.2"
 [tool.poetry.group.polars.dependencies]
 polars = "1.30.0"
 [tool.poetry.group.fireducks.dependencies]
-fireducks = "1.4.4"
+fireducks = { version = "1.4.4", python = "<3.14" }
 
 [build-system]
 requires = ["poetry-core"]
