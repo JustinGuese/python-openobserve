@@ -18,6 +18,7 @@ When applicable, Security Advisories will be created inside GitHub following [Cr
 Please use one of below process to report a vulnerability to the project:
 
 <!-- Full Disclosure -->
+
 * [x] GitHub issue "Report a security issue":
 * [x] [GitHub Private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability)
 * [ ] Email
