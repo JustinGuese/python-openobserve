@@ -13,5 +13,5 @@ polars==1.30.0
 pytest==8.3.5
 pytest-cov==6.0.0
 pytest-memray==1.7.0
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 types-jmespath==1.0.2.20240106
