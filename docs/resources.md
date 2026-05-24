@@ -8,7 +8,7 @@
 ## OpenObserve
 
 * [OpenObserve Github project](https://github.com/openobserve/openobserve/)
-* [API Index](https://openobserve.ai/docs/api/)
+* [API Index](https://openobserve.ai/docs/reference/api/)
 * API Swagger on your own server aka openobserve.example.com/swagger/
 
 ## python_openobserve

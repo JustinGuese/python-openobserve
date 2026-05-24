@@ -25,7 +25,7 @@ Read our [SECURITY.md](../SECURITY.md) about our security policy and how to repo
 
 ### Any contributions you make will be under the same license than the project
 
-In short, when you submit code changes, your submissions are understood to be under the same [License](../LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
+In short, when you submit code changes, your submissions are understood to be under the same [License](LICENSE.md) that covers the project. Feel free to contact the maintainers if that's a concern.
 
 ### Use a Consistent Coding Style
 
