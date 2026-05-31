@@ -692,7 +692,7 @@ def test_create_object_users(mock_post_users, capsys):
         "users",
         {
             "email": "pytest@example.com",
-            "password": "pytest@example.com",
+            "password": "pytest@example.com",  # nosec B105
             "first_name": "pytest",
             "last_name": "",
             "role": "admin",
@@ -836,7 +836,7 @@ def test_import_user1(capsys):
     oo_conn = OpenObserve(host=OO_HOST, user=OO_USER, password=OO_PASS)
     json_pipeline = {
         "email": "pytest@example.com",
-        "password": "pytest@example.com",
+        "password": "pytest@example.com",  # nosec B105
         "first_name": "pytest",
         "last_name": "",
         "role": "admin",

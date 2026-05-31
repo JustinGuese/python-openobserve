@@ -223,10 +223,10 @@ class OpenObserve:
         )
         response_json = self._handle_response(res, "index")
 
-        if response_json["status"][0]["failed"] > 0:  # type:ignore[call-overload]
+        if response_json["status"][0]["failed"] > 0:  # type: ignore[call-overload]
             raise Exception(
                 "Openobserve index failed. "
-                f"{response_json['status'][0]['error']}"  # type:ignore[call-overload]
+                f"{response_json['status'][0]['error']}"  # type: ignore[call-overload]
                 f". document: {document}"
             )
         return response_json
@@ -297,7 +297,7 @@ class OpenObserve:
         )
 
         response_json = self._handle_response(res, "search")
-        res_hits = response_json["hits"]  # type:ignore[call-overload]
+        res_hits = response_json["hits"]  # type: ignore[call-overload]
         self._debug(res_hits, verbosity, 3)
 
         if timestamp_conversion_auto or timestamp_columns is not None:
@@ -669,14 +669,14 @@ class OpenObserve:
                     name: [
                         api_path,
                         self.list_objects(api_path, verbosity=verbosity),
-                    ]  # type:ignore[misc]
+                    ]  # type: ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
                 for name, object_data in data.items():
                     self.export_objects_split(
-                        object_data[0],  # type:ignore[arg-type]
-                        object_data[1],  # type:ignore[arg-type]
+                        object_data[0],  # type: ignore[arg-type]
+                        object_data[1],  # type: ignore[arg-type]
                         file_path,
                         verbosity=verbosity,
                         strip=strip,
@@ -688,7 +688,7 @@ class OpenObserve:
                 data = {
                     name: self.list_objects(
                         api_path, verbosity=verbosity
-                    )  # type:ignore[misc]
+                    )  # type: ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
@@ -780,7 +780,7 @@ class OpenObserve:
         count_update = 0
         current = self.list_objects(object_type, verbosity)
         self._debug(f"Create/Update by name objects list: {current}", verbosity, 4)
-        for obj in current[key]:  # type:ignore[call-overload]
+        for obj in current[key]:  # type: ignore[call-overload]
             if key_name in obj and object_name.strip() == obj[key_name].strip():
                 if overwrite:
                     object_json[key_id] = obj[key_id]
@@ -843,7 +843,7 @@ class OpenObserve:
         count_delete = 0
         current = self.list_objects(object_type, verbosity)
         self._debug(f"Delete by name objects list: {current}", verbosity, 3)
-        for obj in current[key]:  # type:ignore[call-overload]
+        for obj in current[key]:  # type: ignore[call-overload]
             if "name" in obj and object_name == obj[key_name]:
                 self._debug(f"Delete by name matching object: {obj}", verbosity)
                 self.delete_object(object_type, obj[key_id], verbosity)
