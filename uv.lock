@@ -495,12 +495,13 @@ wheels = [
 
 [[package]]
 name = "guarddog"
-version = "2.9.0"
+version = "3.0.0a1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "configparser" },
     { name = "disposable-email-domains" },
+    { name = "nono-py" },
     { name = "prettytable" },
     { name = "pygit2" },
     { name = "python-dateutil" },
@@ -514,9 +515,9 @@ dependencies = [
     { name = "urllib3" },
     { name = "yara-python" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/7e/7b20ddded2a8e04156bcfd1f296249be59914b21a423b86b5ebe5892377b/guarddog-2.9.0.tar.gz", hash = "sha256:744476af7095558b99a9b328918df3071535b356fe8e7156406800a263aea386", size = 242790, upload-time = "2026-02-06T14:40:55.117Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/24/d25f4c6b91cf580d620f2d42bda53111fc24e217b94d905801d410139a00/guarddog-3.0.0a1.tar.gz", hash = "sha256:6541dcb57312cc71b406bec6c9e59600cfc055ac4b6d6a3f4265b9bf01fc116c", size = 263202, upload-time = "2026-05-26T15:11:12.18Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2e/8c/9d8f45ad9b822a4d4469dcf5a3729a497563afaf4c4cbf59880bb16da683/guarddog-2.9.0-py3-none-any.whl", hash = "sha256:5d17ee5ecbc5f1af920384618fca4bcd8099d45bcf508ca62fcd2029ef15f57c", size = 291261, upload-time = "2026-02-06T14:40:52.535Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/97/aefb3d05985d4821dc88ef6d68d55bcd721293c51ab71a8010d4c6351ab2/guarddog-3.0.0a1-py3-none-any.whl", hash = "sha256:6bb2f112390e1709a56f89e26b0b173c9775e2609caa38ece20dc197f381b943", size = 323533, upload-time = "2026-05-26T15:11:10.532Z" },
 ]
 
 [[package]]
@@ -981,6 +982,30 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/98/a4/1ab47638b92648243faf97a5aeb6ea83059cc3624972ab6b8d2316078d3f/mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782", size = 4433, upload-time = "2023-02-04T12:11:27.157Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d", size = 4695, upload-time = "2023-02-04T12:11:25.002Z" },
+]
+
+[[package]]
+name = "nono-py"
+version = "0.10.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/98/95ffd4e37e924af1c7c5b9d131db62f4e1494e9ff0863b4cc8b7e5af88cb/nono_py-0.10.1.tar.gz", hash = "sha256:92b6e752be708380ceccaa6f11bacdb7251fbd4b3c91cce981e7553da99b3fbf", size = 180330, upload-time = "2026-05-23T12:59:24.099Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/70/b781adf8a4c12288d9bd9e723dd0f0be0fb098125f9aa091078d332fd53e/nono_py-0.10.1-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:b4b508ebb76780fd8978574378167fdb49683a115084a5a6135daf8db5671e4a", size = 3540330, upload-time = "2026-05-23T12:58:47.196Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/8c/0e71e547c9f5d556496b9afc9a28acc539b3007c27aaee88948500210763/nono_py-0.10.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:1c677ed6bec7d04a139ae0e5cdd216bb7deb1d0f6ae25bd5b9f1b95619a6a481", size = 3300394, upload-time = "2026-05-23T12:58:48.921Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/a7/f20fc697609d422601dea4f849bfe3381bf6437f2be103bf2366fb3776b0/nono_py-0.10.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b28ac04963ebd765e8fc84049847efb4fc8ecabc55067e0899b9f80413100674", size = 4740650, upload-time = "2026-05-23T12:58:50.566Z" },
+    { url = "https://files.pythonhosted.org/packages/43/2a/9b0529bff845b8b42fad9fc0ca5bb09bafcac015c1245fb877d657b18380/nono_py-0.10.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b20479a42e8ff8bd65ed31409666e52782648fa649d42c86e31354417805f39f", size = 4946066, upload-time = "2026-05-23T12:58:52.448Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/f8/be02ad10b38bb4969ef8e98dfa6a51a45139f9ead7b6fcd6e2fdd5590ba2/nono_py-0.10.1-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:71eed4042d3594930519d4c6ac1e9a11e332ba9059c343971c31dc857366e6be", size = 3540078, upload-time = "2026-05-23T12:58:54.423Z" },
+    { url = "https://files.pythonhosted.org/packages/73/54/8d42ba75c61af32e3bc23fe95a07e4ca4e64eb44af32f207ee6d08c02112/nono_py-0.10.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:afc2f785ef3ebd7d99d945d5b71b8ee7cc71d389b0f791714bed484a4b992e6a", size = 3300043, upload-time = "2026-05-23T12:58:56.253Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/67/06deb387b2ae9863729c5041d3a1fa724e8ce5e984e8d3b3ab0934e709b1/nono_py-0.10.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:68f9f06b687b17da5cfbd8eaa968ddb6d6ef20ec8237cf45f0a2f1278411c694", size = 4741465, upload-time = "2026-05-23T12:58:57.904Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/7b/23ce7de093c9de749fafaac681bdbec1d2fe837c24254d16d8017011020e/nono_py-0.10.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ff9c9d4a8e752abf21ea93db6316d69395e8cccd04d80d2b70b0974a24298d2b", size = 4945840, upload-time = "2026-05-23T12:58:59.684Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/be/c7471b9be1bd1acb13f609b1b228e8fe8dd96cd64f1aa1229457173112b1/nono_py-0.10.1-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:d67b086d5c33a39c490c53dcd86dbc04848cd1427c85d12082f6cfcfadf89866", size = 3533014, upload-time = "2026-05-23T12:59:01.697Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/2d/0225d2648359c7f217cc5a9d7dad287c43ffd84146d6ce035a044cd1680f/nono_py-0.10.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:646697ed44f94f5c31360bf4d5bad959d18ed28b0595f3e28a233dae82605a7f", size = 3296085, upload-time = "2026-05-23T12:59:03.347Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/16/e80fd77c6a306307f737c11fc5b1e63a9ae677ae6b3b8fa29984bcdbaaec/nono_py-0.10.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e81e20b1d2d017f6073d080fd607e0eb2bd2961960824a75faa7731e30e33880", size = 4737884, upload-time = "2026-05-23T12:59:05.009Z" },
+    { url = "https://files.pythonhosted.org/packages/20/99/c8363daba7b169569abc1be3a071e45a519ead4946652e41ba12d98a3cf3/nono_py-0.10.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a33f5c56c7e7e383fd03d00c20b05b359d35b104a4799e341dbdf0b369465909", size = 4942094, upload-time = "2026-05-23T12:59:07.331Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/d7/37f25da8d189409f6f857139545d6190401f2934d1c955fe7b27b0c57af3/nono_py-0.10.1-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:a26518332c1edc7b2b450eac0323b95d326fcfab302b76bbb8d3ba47c31c1315", size = 3533174, upload-time = "2026-05-23T12:59:09.273Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/ef/c648c9eabec2eb709a9d963872b41e0bee12e792651a2cf001cbd2430cd3/nono_py-0.10.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:e6bf7dd1d09466f41948d55b6ac132cb49a6a7566a86be7eb4c1e739fc94af7f", size = 3295619, upload-time = "2026-05-23T12:59:11.921Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/29/da10a4dc9e1e24d05e27a7b22e0359969123109ee2a1e6bd2377a187bf14/nono_py-0.10.1-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0b00fe06ccea84bb098293cb4638735af18d1b1807a487330e3a4f0aaab2bf55", size = 4738129, upload-time = "2026-05-23T12:59:13.579Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/ba/2d852f888f3b6aae4b291fbbae0724f5db9a4e7d27ce4edcac673987d286/nono_py-0.10.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fa7c5989c9854a5c0a20e2c641b9c75f65ae38a445fa27d00192b1f1f62f8b62", size = 4940904, upload-time = "2026-05-23T12:59:15.589Z" },
 ]
 
 [[package]]
@@ -1786,7 +1811,7 @@ tests = [
 requires-dist = [
     { name = "cryptography", specifier = ">=46.0.7,<47.0.0" },
     { name = "fireducks", marker = "extra == 'fireducks'", specifier = "==1.4.4" },
-    { name = "guarddog", marker = "extra == 'ci'", specifier = "==2.9.0" },
+    { name = "guarddog", marker = "extra == 'ci'", specifier = "==3.0.0a1" },
     { name = "h11", specifier = "~=0.16.0" },
     { name = "httpcore", specifier = "~=1.0.9" },
     { name = "httpx", specifier = "~=0.28" },
