@@ -51,7 +51,6 @@ ci = [
     "pytest-cov==6.0.0",
     "python-dotenv==1.2.2",
     "types-jmespath==1.0.2.20240106",
-    "guarddog==3.0.0a1",
 ]
 docs = [
     "mkdocs==1.6.1",
@@ -85,7 +84,6 @@ pytest = "9.0.3"
 pytest-cov = "6.0.0"
 python-dotenv = "1.2.2"
 types-jmespath = "1.0.2.20240106"
-guarddog = "3.0.0a1"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = ">2.2"
