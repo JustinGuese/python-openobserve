@@ -61,7 +61,6 @@ docs = [
 tests = ["pytest==9.0.3", "jmespath==1.0.1", "python-dotenv==1.2.2"]
 pandas = ["pandas>=2.2"]
 polars = ["polars==1.30.0"]
-fireducks = ["fireducks==1.4.4"]
 
 [tool.poetry.group.test.dependencies]
 pytest = "9.0.3"
@@ -93,8 +92,6 @@ pandas = ">2.2"
 
 [tool.poetry.group.polars.dependencies]
 polars = "1.30.0"
-[tool.poetry.group.fireducks.dependencies]
-fireducks = { version = "1.4.4", python = "<3.14" }
 
 [build-system]
 requires = ["poetry-core"]
