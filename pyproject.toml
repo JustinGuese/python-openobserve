@@ -41,7 +41,7 @@ python_openobserve = "python_openobserve:openobserve"
 [project.optional-dependencies]
 ci = [
     "jmespath==1.0.1",
-    "memray==1.19.2",
+    "memray==1.19.3",
     "pytest-memray==1.7.0",
     "mypy==1.15.0",
     "mypy-extensions==1.0.0",
