@@ -52,10 +52,7 @@ jobs:
       - name: Install ansible dependencies
         run: |
           pip3 install -r $GITHUB_WORKSPACE/requirements-ansible.txt
-          python3 -m pip install --upgrade pip
-          pip3 install ansible-lint flake8 yamllint jmespath
           which ansible
-          pip3 install ansible
           pip3 show ansible
           ls -l $HOME/.local/bin || true
           ansible --version
