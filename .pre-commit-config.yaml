@@ -31,10 +31,10 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/pylint
-    rev: v4.0.5
+    rev: v4.0.6
     hooks:
       - id: pylint
-        additional_dependencies: ["httpx", "sqlglot", "pandas", "pytest", "jmespath", "python-dotenv", "polars", "fireducks", "hypothesis"]
+        additional_dependencies: ["httpx", "sqlglot", "pandas", "pytest", "jmespath", "python-dotenv", "polars", "hypothesis"]
         args: [
                   # E1101: Instance of 'LookupDict' has no 'ok' member (no-member)
                   '--generated-member=httpx.codes.ok'
@@ -65,7 +65,7 @@ repos:
         args: ['--baseline', '.secrets.baseline']
         # exclude: .*/tests/.*
   - repo: https://github.com/jackdewinter/pymarkdown
-    rev: v0.9.37
+    rev: v0.9.38
     hooks:
       - id: pymarkdown
         args:

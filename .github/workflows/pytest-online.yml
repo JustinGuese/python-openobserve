@@ -1,12 +1,17 @@
 ---
 # SPDX-FileCopyrightText: 2025 The python_openobserve authors
 # SPDX-License-Identifier: GPL-3.0-or-later
-name: pytest
+name: pytest-online
 
 on:
   push:
   pull_request:
   workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 permissions: {}
 
@@ -17,7 +22,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.14"]
 
     env:
       ANSIBLE_CALLBACKS_ENABLED: profile_tasks
@@ -26,8 +31,23 @@ jobs:
       ANSIBLE_SUITE: default-full-python
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            azure.archive.ubuntu.com:80
+            dl.google.com:443
+            esm.ubuntu.com:443
+            files.pythonhosted.org:443
+            galaxy.ansible.com:443
+            github.com:443
+            packages.microsoft.com:443
+            pypi.org:443
+            www.google.com:1025
+
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
@@ -52,10 +72,7 @@ jobs:
       - name: Install ansible dependencies
         run: |
           pip3 install -r $GITHUB_WORKSPACE/requirements-ansible.txt
-          python3 -m pip install --upgrade pip
-          pip3 install ansible-lint flake8 yamllint jmespath
           which ansible
-          pip3 install ansible
           pip3 show ansible
           ls -l $HOME/.local/bin || true
           ansible --version
@@ -70,6 +87,17 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
         continue-on-error: true
+
+      - name: Install recent libgit2
+        run: |
+          set -x
+          sudo apt-get purge -y libgit2-1.7 libgit2-dev
+          sudo apt-get install -y heimdal-dev
+          curl -OL https://github.com/libgit2/libgit2/archive/refs/tags/v1.9.4.tar.gz && \
+            tar xzf v1.9.4.tar.gz && \
+            cd libgit2-1.9.4 && \
+            ./ci/build.sh && \
+            sudo make install
 
       - name: Install dependencies
         run: |
@@ -87,10 +115,6 @@ jobs:
           EOF
           cat .env
 
-      - name: Test with pytest - offline
-        run: |
-          pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html --memray
-
       - name: Test with pytest  - online
         run: |
           [ -f .env ] && pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html --memray
@@ -101,6 +125,6 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # tag=v7.0.1
         with:
           name: pytest-results-${{ matrix.python-version }}
-          path: junit/test-${{ matrix.python-version }}-results.xml
+          path: junit/test-${{ matrix.python-version }}-results-online.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
