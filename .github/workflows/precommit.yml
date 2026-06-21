@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # tag=v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Install gitleaks
         run: |
@@ -29,12 +29,12 @@ jobs:
           sudo install -m 755 gitleaks /usr/local/bin/
         continue-on-error: true
       - name: Install cosign
-        uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb  # tag=v3.8.2
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad  # v4.0.0
         with:
           cosign-release: "v2.5.0"
       - name: Install trufflehog
         run: |
-          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/f37f2eff68c31620fd88bc37ff2b7d57ea0c700c/scripts/install.sh | sh -s -- -b /usr/local/bin/
         continue-on-error: true
       - name: Install mypy
         run: |
@@ -43,6 +43,7 @@ jobs:
           pip install -r requirements-dev.txt
           mypy --install-types .
         continue-on-error: true
-      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # tag=v3.0.1
+      - name: Run pre-commit
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # tag=v3.0.1
         with:
           extra_args: --all-files --show-diff-on-failure

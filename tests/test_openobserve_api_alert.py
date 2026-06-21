@@ -49,7 +49,7 @@ def test_create_object_users(capsys):
         "users",
         {
             "email": "pytest@example.com",
-            "password": "pytest@example.com",
+            "password": "pytest@example.com",  # nosec B105
             "first_name": "pytest",
             "last_name": "",
             "role": "admin",

@@ -7,6 +7,7 @@
 
 [![Actions Status - Main](https://github.com/JustinGuese/python-openobserve/workflows/pytest/badge.svg)](https://github.com/JustinGuese/python-openobserve/actions?query=branch%3Amain)
 [![PyPI Downloads](https://static.pepy.tech/badge/python-openobserve/week)](https://pepy.tech/projects/python-openobserve)
+<!-- markdown-link-check-disable-next-line -->
 [![Documentation build status](https://img.shields.io/readthedocs/python-openobserve?logo=read-the-docs)](https://python-openobserve.readthedocs.org/en/latest/)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/JustinGuese/python-openobserve/badge)](https://scorecard.dev/viewer/?uri=github.com/JustinGuese/python-openobserve)
 
