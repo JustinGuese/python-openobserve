@@ -1,7 +1,7 @@
 ---
 # SPDX-FileCopyrightText: 2025 The python_openobserve authors
 # SPDX-License-Identifier: GPL-3.0-or-later
-name: pytest
+name: pytest-online
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.14"]
 
     env:
       ANSIBLE_CALLBACKS_ENABLED: profile_tasks
@@ -115,10 +115,6 @@ jobs:
           EOF
           cat .env
 
-      - name: Test with pytest - offline
-        run: |
-          pytest tests/test_*offline.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html --memray
-
       - name: Test with pytest  - online
         run: |
           [ -f .env ] && pytest tests/test_openobserve_api.py --doctest-modules --junitxml=junit/test-${{ matrix.python-version }}-results.xml --cov=com --cov-report=xml --cov-report=html --memray
@@ -129,6 +125,6 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # tag=v7.0.1
         with:
           name: pytest-results-${{ matrix.python-version }}
-          path: junit/test-${{ matrix.python-version }}-results.xml
+          path: junit/test-${{ matrix.python-version }}-results-online.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
