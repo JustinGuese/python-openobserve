@@ -89,7 +89,7 @@ types-jmespath = "1.0.2.20240106"
 pandas = ">2.2"
 
 [tool.poetry.group.polars.dependencies]
-polars = "1.30.0"
+polars = "1.42.0"
 
 [build-system]
 requires = ["poetry-core"]
