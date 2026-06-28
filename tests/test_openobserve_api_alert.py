@@ -11,7 +11,7 @@ import os
 # import json
 import pytest  # type: ignore
 import jmespath
-import httpx
+import httpx  # type: ignore
 from dotenv import load_dotenv  # type: ignore
 from python_openobserve.openobserve import OpenObserve
 
