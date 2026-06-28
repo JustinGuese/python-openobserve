@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
 
-import httpx
+import httpx  # type: ignore
 import sqlglot  # type: ignore
 
 try:
@@ -33,7 +33,7 @@ except ImportError:
     HAVE_MODULE_PANDAS = False
 
 try:
-    import polars
+    import polars  # type: ignore
 
     HAVE_MODULE_POLARS = True
 except ImportError:
