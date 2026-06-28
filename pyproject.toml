@@ -63,7 +63,7 @@ polars = ["polars==1.42.0"]
 
 [tool.poetry.group.test.dependencies]
 pytest = "9.0.3"
-jmespath = "1.0.1"
+jmespath = "1.1.0"
 python-dotenv = "1.2.2"
 
 [tool.poetry.group.docs.dependencies]
@@ -72,7 +72,7 @@ mkdocs-material = "9.6.15"
 mkdocstrings = "0.29.1"
 
 [tool.poetry.group.ci.dependencies]
-jmespath = "1.0.1"
+jmespath = "1.1.0"
 memray = "1.19.3"
 pytest-memray = "1.7.0"
 mypy = "1.15.0"
