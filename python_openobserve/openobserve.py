@@ -437,7 +437,7 @@ class OpenObserve:
                 try:
                     # ensure timestamp format
                     if col in ["_timestamp"] + timestamp_columns:
-                        df_res[col] = polars.str.to_datetime(df_res[col])
+                        df_res = df_res.with_columns(polars.col(col).str.to_datetime())
                 except Exception as err:
                     raise Exception(
                         err,
