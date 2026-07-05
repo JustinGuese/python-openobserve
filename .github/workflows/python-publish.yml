@@ -45,6 +45,10 @@ jobs:
           --sdist
           --wheel
           --outdir dist/
+
+      - name: Generate CycloneDX SBOM
+        run: cyclonedx-py environment --output-format json --output-file dist/bom.json
+
       - name: Store the distribution packages
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # tag=v4.6.2
         with:
