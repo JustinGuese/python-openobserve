@@ -9,6 +9,6 @@ httpx==0.28.1
 idna==3.18
 pydantic==2.13.4
 pydantic_core==2.47.0
-sqlglot==26.4.1
+sqlglot==26.33.0
 typing-inspection==0.4.2
 urllib3==2.7.0
