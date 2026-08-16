@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2025 The python_openobserve authors
 # SPDX-License-Identifier: GPL-3.0-or-later
-ansible==14.2.0
+ansible==14.3.1
 jmespath==1.1.0
 pip==26.2.1
