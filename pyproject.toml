@@ -83,7 +83,7 @@ pandas-stubs = "2.3.3.260113"
 pytest = "9.1.1"
 pytest-cov = "6.3.0"
 python-dotenv = "1.2.2"
-types-jmespath = "1.0.2.20240106"
+types-jmespath = "1.1.0.20260724"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = ">2.2"
