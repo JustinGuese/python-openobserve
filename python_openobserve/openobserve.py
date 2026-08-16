@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
 
-import httpx
+import httpx  # type: ignore
 import sqlglot  # type: ignore
 
 try:
@@ -33,7 +33,7 @@ except ImportError:
     HAVE_MODULE_PANDAS = False
 
 try:
-    import polars
+    import polars  # type: ignore
 
     HAVE_MODULE_POLARS = True
 except ImportError:
@@ -437,7 +437,7 @@ class OpenObserve:
                 try:
                     # ensure timestamp format
                     if col in ["_timestamp"] + timestamp_columns:
-                        df_res[col] = polars.to_datetime(df_res[col])
+                        df_res = df_res.with_columns(polars.col(col).str.to_datetime())
                 except Exception as err:
                     raise Exception(
                         err,

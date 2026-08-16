@@ -23,7 +23,7 @@ jobs:
 
     services:
       openobserve:
-        image: public.ecr.aws/zinclabs/openobserve:latest@sha256:39b9cc3d437c278a8749e1711c46897fbedb06ef26c3d1193887a76670e87773
+        image: public.ecr.aws/zinclabs/openobserve:latest@sha256:e4d9eeb5b0190c80683b5b7d9f75a5bfe5edc76eacba398978a7efcb41c98dd6
         ports:
           - 5080:5080
         env:
