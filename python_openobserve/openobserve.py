@@ -502,7 +502,7 @@ class OpenObserve:
                 file_name = (
                     f"{file_prefix}--"
                     f"{period_start.strftime(time_fmt)}--{period_end.strftime(time_fmt)}"
-                    "--export.csv"
+                    "--export.json"
                 )
                 res_json = self.search(
                     sql,
