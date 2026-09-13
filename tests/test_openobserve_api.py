@@ -5,6 +5,8 @@ SPDX-FileCopyrightText: 2025 The python_openobserve authors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
+# pylint: disable=duplicate-code
+
 import os
 
 import json
@@ -56,7 +58,10 @@ def test_connection_incorrect_params1():
 def test_connection_incorrect_params2():
     """Ensure error if incorrect parameter"""
     oo_conn = OpenObserve(
-        host="invalid", user="invalid@example.com", password="", timeout=3  # nosec B106
+        host="invalid",
+        user="invalid@example.com",
+        password="",
+        timeout=3,  # nosec B106
     )
     with pytest.raises(
         httpx.UnsupportedProtocol,
