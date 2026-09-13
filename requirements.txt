@@ -8,7 +8,7 @@ httpcore==1.0.9
 httpx==0.28.1
 idna==3.19
 pydantic==2.13.5
-pydantic_core==2.48.0
-sqlglot==30.17.0
+pydantic_core==2.49.0
+sqlglot==30.18.0
 typing-inspection==0.4.4
 urllib3==2.7.0
