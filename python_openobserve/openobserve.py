@@ -15,7 +15,7 @@ import json
 import os
 import sys
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Union, Optional, Any, cast
 from pathlib import Path
 
@@ -446,6 +446,112 @@ class OpenObserve:
                     ) from err
         return df_res
 
+    # pylint: disable=R0914
+    def search2export(
+        self,
+        sql: str,
+        file_prefix: str,
+        *,
+        start_time: datetime = datetime.now(),
+        end_time: datetime = datetime.now(),
+        export_format: str = "json",
+        split_period: str = "D",
+        verbosity: int = 0,
+        timeout: int = 300,
+        timestamp_conversion_auto: bool = False,
+    ) -> bool:
+        """
+        OpenObserve search export function
+        Split options to manage large volume
+
+        Args:
+          sql: input sql query
+          start_time: start of search interval, either datetime, either int/epoch
+          end_time: end of search interval, either datetime, either int/epoch
+          export_format: raw json from OpenObserve (json) or csv
+          split_period: interval per file, H, D, W or M
+          file_prefix: file prefix for export
+          verbosity: how verbose to run from 0/less to 5/more
+          timeout: http timeout
+          timestamp_conversion_auto: try to convert automatically column containing time as name
+          timestamp_columns: convert given columns to timestamp
+        """
+        if not file_prefix:
+            print(f"FATAL! no file_prefix input: {file_prefix}")
+            return False
+        period_start = start_time
+        interval = timedelta(days=1)
+        time_fmt = "%Y-%m-%dT%H:%M"
+        if split_period == "H":
+            interval = timedelta(hours=1)
+        if split_period == "W":
+            interval = timedelta(weeks=1)
+            time_fmt = "%Y-%m-%d"
+        # FIXME! timedelta does not support months input
+        # alternative: relativedelta but extra dependency
+        # if split_period == "M":
+        #     interval = timedelta(months=1)
+        #     time_fmt = "%Y-%m-%d"
+        if split_period not in ("H", "D", "W"):
+            print(f"FATAL! invalid split period input: {split_period}")
+            return False
+        period_end = start_time + interval
+
+        if export_format == "json":
+            while period_end < end_time:
+                file_name = (
+                    f"{file_prefix}--"
+                    f"{period_start.strftime(time_fmt)}--{period_end.strftime(time_fmt)}"
+                    "--export.csv"
+                )
+                res_json = self.search(
+                    sql,
+                    start_time=period_start,
+                    end_time=period_end,
+                    query_size=1000000000000,
+                    verbosity=verbosity,
+                    timeout=timeout,
+                    timestamp_conversion_auto=timestamp_conversion_auto,
+                    # leaving conversion to pandas
+                    # timestamp_columns=timestamp_columns,
+                )
+                with open(
+                    file_name,
+                    "w",
+                    encoding="utf-8",
+                ) as f:
+                    json.dump(res_json, f)
+                # loop
+                period_start = period_end
+                period_end = period_start + interval
+        if export_format == "csv":
+            while period_end < end_time:
+                file_name = (
+                    f"{file_prefix}--"
+                    f"{period_start.strftime(time_fmt)}--{period_end.strftime(time_fmt)}"
+                    "--export.csv"
+                )
+                df_res = self.search2df(
+                    sql,
+                    start_time=period_start,
+                    end_time=period_end,
+                    query_size=1000000000000,
+                    verbosity=verbosity,
+                    timeout=timeout,
+                    timestamp_conversion_auto=timestamp_conversion_auto,
+                    # leaving conversion to pandas
+                    # timestamp_columns=timestamp_columns,
+                )
+                df_res.to_csv(
+                    file_name,
+                    index=False,
+                )
+                # loop
+                period_start = period_end
+                period_end = period_start + interval
+
+        return True
+
     # pylint: disable=too-many-branches,too-many-locals
     def export_objects_split(
         self,
@@ -603,7 +709,6 @@ class OpenObserve:
                 for name, df in data.items():
                     df.to_excel(f"{file_path}{name}.xlsx")
         else:  # default json
-
             if split is True and flat is False:
                 # split json
                 data = {
@@ -627,9 +732,7 @@ class OpenObserve:
                 sys.exit(1)
             else:
                 data = {
-                    name: self.list_objects(
-                        api_path, verbosity=verbosity
-                    )  # type: ignore[misc]
+                    name: self.list_objects(api_path, verbosity=verbosity)  # type: ignore[misc]
                     for name, api_path in object_types.items()
                 }
 
