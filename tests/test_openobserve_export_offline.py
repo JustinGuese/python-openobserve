@@ -32,9 +32,9 @@ OO_HOST = OO_USER = OO_PASS = ""  # nosec B106 B105
 
 def test_connection_settings():
     """Ensure have connection settings from environment"""
-    assert "OPENOBSERVE_URL" in os.environ
-    assert "OPENOBSERVE_USER" in os.environ
-    assert "OPENOBSERVE_PASS" in os.environ
+    assert OO_HOST
+    assert OO_USER
+    assert OO_PASS
 
 
 def mock_post(*args, **kwargs):
