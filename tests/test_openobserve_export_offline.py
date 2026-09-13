@@ -27,7 +27,7 @@ from python_openobserve.openobserve import OpenObserve
 
 load_dotenv()
 
-OO_HOST = OO_USER = OO_PASS = ""  # nosec B106 B105
+OO_HOST = OO_USER = OO_PASS = "MOCK_INPUT"  # nosec B105
 
 
 def test_connection_settings():
