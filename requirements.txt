@@ -6,9 +6,9 @@ charset-normalizer==3.5.1
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
-idna==3.19
+idna==3.20
 pydantic==2.13.5
 pydantic_core==2.49.0
-sqlglot==30.18.0
+sqlglot==30.19.0
 typing-inspection==0.4.4
-urllib3==2.7.0
+urllib3==2.8.0
