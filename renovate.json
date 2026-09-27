@@ -18,7 +18,12 @@
    "addLabels": [
     "automerge"
    ],
-   "minimumReleaseAge": "1 day"
+   "minimumReleaseAge": "3 days",
+   "prCreation": "not-pending",
+   "internalChecksFilter": "strict",
+   "schedule": [
+    "* * * * 5"
+   ]
   },
   {
    "matchManagers": [
