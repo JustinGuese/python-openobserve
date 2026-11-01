@@ -107,3 +107,11 @@ jobs:
           pip freeze
         if: ${{ always() }}
         continue-on-error: true
+      - name: After script - requirements-build.txt
+        run: |
+          set -x
+          pip install -r requirements-build.txt
+          pipdeptree -r
+          pip freeze
+        if: ${{ always() }}
+        continue-on-error: true
