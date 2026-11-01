@@ -36,6 +36,7 @@ jobs:
         with:
           egress-policy: block
           allowed-endpoints: >
+            artifacts.elastic.co:443
             azure.archive.ubuntu.com:80
             dl.google.com:443
             esm.ubuntu.com:443
