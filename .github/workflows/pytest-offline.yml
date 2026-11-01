@@ -98,3 +98,12 @@ jobs:
           path: junit/test-${{ matrix.python-version }}-results-offline.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
+
+      - name: After script - python
+        run: |
+          set -x
+          pip install pipdeptree
+          pipdeptree -r
+          pip freeze
+        if: ${{ always() }}
+        continue-on-error: true
