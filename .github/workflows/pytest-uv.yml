@@ -45,8 +45,9 @@ jobs:
             github.com:443
             packages.microsoft.com:443
             pypi.org:443
+            raw.githubusercontent.com:443
+            releases.astral.sh:443
             www.google.com:1025
-
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
