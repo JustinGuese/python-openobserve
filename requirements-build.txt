@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2025 The python_openobserve authors
 # SPDX-License-Identifier: GPL-3.0-or-later
 build==1.6.1
-cyclonedx-bom==7.5.0
-pip==26.2.1
+cyclonedx-bom==7.6.0
+pip==26.2.2

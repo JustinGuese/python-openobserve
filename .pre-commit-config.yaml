@@ -42,7 +42,7 @@ repos:
   # https://github.com/python/mypy/issues/13916
   # https://jaredkhan.com/blog/mypy-pre-commit
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.4.0  # 1.15.0
+    rev: v2.4.1  # 1.15.0
     hooks:
       - id: mypy
         language: system

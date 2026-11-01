@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 jmespath==1.1.0
 memray==1.20.0
-mypy==2.4.0
+mypy==2.4.1
 mypy-extensions==1.1.0
 openpyxl==3.1.5
 pandas==3.1.0
-pandas-stubs==3.0.5.260914
-polars==2.0.0
-pytest==9.1.1
+pandas-stubs==3.1.0.261029
+polars==2.1.0
+pytest==9.2.0
 pytest-cov==7.1.0
 pytest-memray==1.11.0
 python-dotenv==1.2.4
