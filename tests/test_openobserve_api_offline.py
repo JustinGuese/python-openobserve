@@ -12,6 +12,7 @@ from unittest.mock import patch
 import pytest  # type: ignore
 import sqlglot  # type: ignore
 import jmespath
+from pandas.api.types import is_string_dtype, is_datetime64_any_dtype
 from python_openobserve.openobserve import OpenObserve
 
 # os.environ["REQUESTS_CA_BUNDLE"] = (
@@ -328,7 +329,7 @@ def test_search1_dftypes(mock_post):
     assert not df_search_results.empty
     assert df_search_results.shape
     assert not df_search_results.columns.empty
-    assert df_search_results["_timestamp"].dtypes == "datetime64[ns]"
+    assert is_datetime64_any_dtype(df_search_results["_timestamp"])
 
 
 @patch("httpx.post", side_effect=mock_post502)
@@ -583,8 +584,7 @@ def test_search_time_conversion3(mock_post_kunai, capsys):
     assert df_res["_timestamp"].dtypes == "datetime64[ns]"
     assert df_res["info_utc_time"].dtypes == "datetime64[ns, UTC]"
     # python Objects aka string
-    assert df_res["body___monotonic_timestamp"].dtypes == "O"
-    # assert df_res["body__runtime_scope"].dtypes == "O"
+    assert is_string_dtype(df_res["body___monotonic_timestamp"].dtype)
 
 
 def mock_delete404(*args, **kwargs):

@@ -7,6 +7,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 permissions: {}
 
@@ -26,11 +31,27 @@ jobs:
       ANSIBLE_SUITE: default-full-python
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43  # v2.22.3
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            artifacts.elastic.co:443
+            azure.archive.ubuntu.com:80
+            dl.google.com:443
+            esm.ubuntu.com:443
+            files.pythonhosted.org:443
+            galaxy.ansible.com:443
+            github.com:443
+            packages.microsoft.com:443
+            pypi.org:443
+            www.google.com:1025
+
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -43,6 +64,12 @@ jobs:
             ./.venv
           key: ${{ runner.os }}-pyo2-${{ steps.get-date.outputs.date }}
 
+      - name: Environment
+        run: |
+          set -x
+          pwd
+          ls
+          ls $GITHUB_WORKSPACE
       - name: Install ansible dependencies
         run: |
           pip3 install -r $GITHUB_WORKSPACE/requirements-ansible.txt
